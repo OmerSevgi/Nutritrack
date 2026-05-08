@@ -252,3 +252,53 @@ class AIService:
             return completion.choices[0].message.content
         except Exception as e:
             return f"Tarif oluşturulamadı: {str(e)}"
+
+    def generate_daily_briefing(self, user_profile, yesterday_stats):
+        """
+        Generates a proactive morning briefing based on yesterday's performance.
+        """
+        try:
+            prompt = f"""
+            Sen NutriTrack AI Baş Koçusun. Kullanıcıya özel 'Günün Savaş Planı'nı hazırla.
+            HEDEF: {user_profile['goal']}.
+            DÜNÜN ÖZETİ: {yesterday_stats['calories']} kcal, {yesterday_stats['protein']}g protein.
+            
+            GÖREVİN: 
+            1. Dünü kısaca yorumla (iyi veya kötü).
+            2. Bugünkü beslenme ve antrenman için 1 stratejik tavsiye ver.
+            3. Motive edici, sert ama samimi bir kapanış yap.
+            Yanıtın çok kısa (3 cümle) ve vurucu olsun.
+            """
+            
+            completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            return "Bugün hedeflerine odaklan, başarabilirsin!"
+
+    def generate_shopping_list(self, user_profile, weekly_stats):
+        """
+        Generates a shopping list based on performance and goals.
+        """
+        try:
+            stats_context = "Son haftalık hacim: " + str(weekly_stats.get('total_volume', 0))
+            prompt = f"""
+            Sen NutriTrack Alışveriş Asistanısın. 
+            HEDEF: {user_profile['goal']}.
+            {stats_context}
+            
+            Kullanıcının hedefine en uygun 5-7 maddelik bir market alışveriş listesi hazırla.
+            Neden her birini alması gerektiğini 1-2 kelimeyle açıkla (Örn: Yumurta - Yüksek Protein).
+            """
+            
+            completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            return "Alışveriş listesi şu an hazırlanamadı."

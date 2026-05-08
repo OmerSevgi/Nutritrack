@@ -157,6 +157,16 @@ class NutritionService:
         for key in ['calories', 'protein', 'carbs', 'fats']:
             summary[key] = round(summary[key], 1)
             
+        # Calculate NutriScore (0-100)
+        score = 0
+        if summary['targets']['calories'] > 0:
+            cal_accuracy = 1 - min(abs(summary['calories'] - summary['targets']['calories']) / summary['targets']['calories'], 1)
+            pro_accuracy = 1 - min(abs(summary['protein'] - summary['targets']['protein']) / summary['targets']['protein'], 1)
+            score = round((cal_accuracy * 0.6 + pro_accuracy * 0.4) * 100)
+        
+        summary['nutri_score'] = score
+        summary['streak'] = user.health_profile.streak_count if user.health_profile else 0
+            
         return summary
 
     @staticmethod

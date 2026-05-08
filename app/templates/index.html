@@ -6,10 +6,26 @@
     
     <!-- Hero Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-8">
-        <div>
-            <h2 class="text-4xl font-black text-white tracking-tight mb-2">Hoş geldin, <span class="text-emerald-400" id="userNameDisplay">Kullanıcı</span>!</h2>
+        <div class="flex-1">
+            <div class="flex items-center gap-4 mb-2">
+                <h2 class="text-4xl font-black text-white tracking-tight">Hoş geldin, <span class="text-emerald-400" id="userNameDisplay">Kullanıcı</span>!</h2>
+                <div class="flex items-center bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full gap-2">
+                    <i class="fa-solid fa-fire text-orange-500 text-sm animate-pulse"></i>
+                    <span id="streakDisplay" class="text-xs font-black text-orange-500 tracking-widest">0 GÜN</span>
+                </div>
+            </div>
             <p class="text-slate-400 font-medium italic text-sm">Bugün harika bir gün, hedeflerine odaklanmaya hazır mısın?</p>
         </div>
+        
+        <!-- NutriScore Gauge -->
+        <div class="glass px-6 py-4 rounded-3xl border-emerald-500/10 flex flex-col items-center">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">NutriScore</p>
+            <div class="flex items-end gap-1">
+                <span id="nutriScoreDisplay" class="text-3xl font-black text-emerald-400">0</span>
+                <span class="text-xs font-bold text-slate-600 mb-1.5">/100</span>
+            </div>
+        </div>
+
         <div class="flex items-center gap-4 bg-slate-900/40 p-2 rounded-2xl border border-white/5">
             <button onclick="changeDate(-1)" class="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition text-slate-400">
                 <i class="fa-solid fa-chevron-left text-xs"></i>
@@ -21,6 +37,21 @@
             <button onclick="changeDate(1)" class="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition text-slate-400">
                 <i class="fa-solid fa-chevron-right text-xs"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- AI Morning Briefing -->
+    <div id="briefingCard" class="glass p-8 rounded-[2.5rem] border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent relative overflow-hidden hidden">
+        <div class="absolute -right-8 -top-8 opacity-10 rotate-12">
+            <i class="fa-solid fa-sun text-[10rem] text-emerald-400"></i>
+        </div>
+        <div class="relative z-10">
+            <h3 class="text-sm font-black text-emerald-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                <i class="fa-solid fa-bolt-lightning"></i> Günün Savaş Planı
+            </h3>
+            <p id="briefingText" class="text-lg font-medium text-slate-200 leading-relaxed max-w-3xl italic">
+                Verileriniz analiz ediliyor...
+            </p>
         </div>
     </div>
 

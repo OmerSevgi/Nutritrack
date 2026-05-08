@@ -88,3 +88,41 @@ def fridge_assistant(current_user):
     
     recipe = ai_service.generate_fridge_recipe(user_profile, ingredients)
     return jsonify({'recipe': recipe}), 200
+
+@ai_bp.route('/daily-briefing', methods=['GET'])
+@token_required
+def daily_briefing(current_user):
+    from datetime import timedelta
+    yesterday = (datetime.utcnow() - timedelta(days=1)).date()
+    
+    from app.services.nutrition_service import NutritionService
+    yesterday_stats = NutritionService.get_daily_summary(current_user, yesterday)
+    
+    ai_service = AIService()
+    user_profile = {
+        'goal': current_user.health_profile.goal if current_user.health_profile else 'maintenance'
+    }
+    
+    briefing = ai_service.generate_daily_briefing(user_profile, yesterday_stats)
+    return jsonify({'briefing': briefing}), 200
+
+@ai_bp.route('/shopping-list', methods=['GET'])
+@token_required
+def shopping_list(current_user):
+    from datetime import timedelta
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    workouts = Workout.query.filter(Workout.user_id == current_user.id, Workout.timestamp >= seven_days_ago).all()
+    
+    total_volume = 0
+    for w in workouts:
+        if w.weight_data:
+            for ex in w.weight_data:
+                total_volume += float(ex.get('weight', 0)) * int(ex.get('sets', 0)) * int(ex.get('reps', 0))
+                
+    ai_service = AIService()
+    user_profile = {
+        'goal': current_user.health_profile.goal if current_user.health_profile else 'maintenance'
+    }
+    
+    shopping_list = ai_service.generate_shopping_list(user_profile, {'total_volume': total_volume})
+    return jsonify({'shopping_list': shopping_list}), 200

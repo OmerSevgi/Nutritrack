@@ -35,6 +35,11 @@ class HealthProfile(db.Model):
     activity_level = db.Column(db.String(20)) # sedentary, lightly_active, etc.
     goal = db.Column(db.String(50)) # maintenance, hypertrophy, fat_loss
     
+    # Gamification
+    streak_count = db.Column(db.Integer, default=0)
+    last_streak_date = db.Column(db.Date)
+    last_nutri_score = db.Column(db.Integer, default=0)
+    
     # Calculated targets (will be updated by services)
     target_calories = db.Column(db.Integer)
     target_protein = db.Column(db.Float)

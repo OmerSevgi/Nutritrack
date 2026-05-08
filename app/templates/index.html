@@ -293,7 +293,7 @@
         currentDate = date;
         document.getElementById('selectedDateDisplay').innerText = date === new Date().toISOString().split('T')[0] ? 'BUGÜN' : date;
         try {
-            const res = await fetch(`/api/nutrition/summary?date=${date}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(`/api/nutrition/summary?date=${date}`, { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
             const data = await res.json();
             if (res.ok) updateUI(data);
         } catch (err) {}
@@ -358,14 +358,14 @@
 
     async function resetWater() {
         if (confirm('Sıfırlansın mı?')) {
-            await fetch('/api/nutrition/water', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            await fetch('/api/nutrition/water', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
             fetchSummary();
         }
     }
 
     // FITNESS LOGIC
     async function fetchWorkouts() {
-        const res = await fetch('/api/fitness/workouts', { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch('/api/fitness/workouts', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
         const data = await res.json();
         const list = document.getElementById('workoutList');
         list.innerHTML = '';
@@ -385,14 +385,14 @@
     }
 
     async function fetchWeeklyReport() {
-        const res = await fetch('/api/fitness/stats/report', { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch('/api/fitness/stats/report', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
         const data = await res.json();
         const el = document.getElementById('weeklyAIReport');
         if (res.ok) { el.innerText = data.report; el.classList.remove('hidden'); }
     }
 
     async function fetchWeeklyStats() {
-        const res = await fetch('/api/fitness/stats/weekly', { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch('/api/fitness/stats/weekly', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
         const data = await res.json();
         const grid = document.getElementById('exerciseStatsGrid');
         grid.innerHTML = '';
@@ -406,7 +406,7 @@
 
     // PROGRESS LOGIC
     async function fetchWeightHistory() {
-        const res = await fetch('/api/auth/weight-history', { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch('/api/auth/weight-history', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
         const data = await res.json();
         initWeightChart(data);
     }
@@ -458,7 +458,7 @@
     function toggleChat() { document.getElementById('aiChatWindow').classList.toggle('hidden'); }
     
     async function fetchWeeklyHistory() {
-        const res = await fetch('/api/nutrition/weekly-history', { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch('/api/nutrition/weekly-history', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
         const data = await res.json();
         initHistoryChart(data);
     }
@@ -483,7 +483,7 @@
 
     async function deleteWorkout(id) {
         if (confirm('Silinsin mi?')) {
-            await fetch(`/api/fitness/workout/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            await fetch(`/api/fitness/workout/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
             fetchWorkouts();
         }
     }

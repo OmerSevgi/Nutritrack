@@ -27,26 +27,23 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        # Check standard Authorization header
-        if 'Authorization' in request.headers:
-            auth_header = request.headers['Authorization']
-            if len(auth_header.split(" ")) > 1:
+        # Check standard Authorization header or custom X-Authorization
+        auth_header = request.headers.get('Authorization') or request.headers.get('X-Authorization')
+        
+        if auth_header:
+            if "Bearer " in auth_header:
                 token = auth_header.split(" ")[1]
             else:
                 token = auth_header
-        # Fallback for proxy/server environments
-        elif request.environ.get('HTTP_AUTHORIZATION'):
-            auth_header = request.environ.get('HTTP_AUTHORIZATION')
-            if len(auth_header.split(" ")) > 1:
-                token = auth_header.split(" ")[1]
-            else:
-                token = auth_header
+        
+        # Fallback for proxy environments
+        if not token and request.environ.get('HTTP_AUTHORIZATION'):
+            token = request.environ.get('HTTP_AUTHORIZATION').split(" ")[1] if "Bearer " in request.environ.get('HTTP_AUTHORIZATION') else request.environ.get('HTTP_AUTHORIZATION')
         
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
         
         try:
-            # Note: Ensure SECRET_KEY in env is > 32 chars
             data = jwt.decode(token, current_app.config.get('SECRET_KEY'), algorithms=["HS256"])
             current_user = User.query.get(data['sub'])
             if not current_user:
@@ -56,7 +53,7 @@ def token_required(f):
         except jwt.InvalidTokenError:
             return jsonify({'message': 'Token is invalid!'}), 401
         except Exception as e:
-            return jsonify({'message': f'Error decoding token: {str(e)}'}), 401
+            return jsonify({'message': f'Error: {str(e)}'}), 401
             
         return f(current_user, *args, **kwargs)
     

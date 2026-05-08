@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block title %}Hoş Geldiniz{% endblock %}
+
+{% block content %}
+<div class="relative py-16 px-4 sm:px-6 lg:px-8">
+    <!-- Hero Section -->
+    <div class="text-center">
+        <h2 class="text-base font-semibold text-emerald-400 tracking-wide uppercase">Yapay Zeka Destekli Beslenme Asistanı</h2>
+        <p class="mt-1 text-4xl font-extrabold text-white sm:text-5xl sm:tracking-tight lg:text-6xl">
+            Hedeflerinize <span class="text-emerald-500">Bilimle</span> Ulaşın
+        </p>
+        <p class="max-w-xl mt-5 mx-auto text-xl text-slate-400">
+            NutriTrack AI, kas gelişimi hedeflerinizi analiz eder, makrolarınızı takip eder ve Gemini AI ile size özel koçluk yapar.
+        </p>
+        <div class="mt-10 flex justify-center gap-4">
+            <a href="/auth" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 md:py-4 md:text-lg md:px-10 transition shadow-lg shadow-emerald-500/20">
+                Hemen Başlayın
+            </a>
+            <a href="#features" class="inline-flex items-center px-8 py-3 border border-slate-700 text-base font-medium rounded-xl text-slate-300 bg-slate-800/50 hover:bg-slate-800 md:py-4 md:text-lg md:px-10 transition">
+                Daha Fazla Bilgi
+            </a>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="mt-32">
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Feature 1 -->
+            <div class="glass p-8 rounded-3xl border border-white/5 hover:border-emerald-500/30 transition group">
+                <div class="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-calculator text-emerald-500 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Dinamik Makro Takibi</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Mifflin-St Jeor denklemi ile bazal metabolizmanızı hesaplıyor, hipertrofi hedefinize göre protein ve kalori ihtiyacınızı her gün güncelliyoruz.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="glass p-8 rounded-3xl border border-white/5 hover:border-blue-500/30 transition group">
+                <div class="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-robot text-blue-500 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">AI Coach (Gemini)</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Google Gemini entegrasyonu sayesinde o anki beslenme durumunuzu analiz eden ve size özel yemek önerileri sunan yapay zeka asistanınız her an yanınızda.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="glass p-8 rounded-3xl border border-white/5 hover:border-yellow-500/30 transition group">
+                <div class="h-12 w-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-dumbbell text-yellow-500 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Kas Gelişimi Odaklı</h3>
+                <p class="text-slate-400 leading-relaxed">
+                    Sıradan diyet uygulamalarının aksine, hipertrofi için gereken protein sentezi ve kalori fazlası dengesini sizin yerinize biz yönetiyoruz.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+flask-migrate
+pyjwt
+google-generativeai
+python-dotenv
+pyodbc
+flask-cors
+groq
+psycopg2-binary
+gunicorn

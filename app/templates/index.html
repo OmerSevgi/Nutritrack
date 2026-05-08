@@ -1,0 +1,470 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-10 animate-in fade-in duration-700">
+    
+    <!-- Hero Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-8">
+        <div>
+            <h2 class="text-4xl font-black text-white tracking-tight mb-2">Hoş geldin, <span class="text-emerald-400" id="userNameDisplay">Kullanıcı</span>!</h2>
+            <p class="text-slate-400 font-medium italic text-sm">Bugün harika bir gün, hedeflerine odaklanmaya hazır mısın?</p>
+        </div>
+        <div class="flex items-center gap-4 bg-slate-900/40 p-2 rounded-2xl border border-white/5">
+            <button onclick="changeDate(-1)" class="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition text-slate-400">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <div class="px-4 text-center">
+                <p id="selectedDateDisplay" class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">BUGÜN</p>
+                <input type="date" id="datePicker" onchange="fetchSummary(this.value)" class="bg-transparent text-xs text-slate-300 font-bold focus:outline-none cursor-pointer">
+            </div>
+            <button onclick="changeDate(1)" class="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition text-slate-400">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Section (8/12) -->
+        <div class="lg:col-span-8 space-y-10">
+            
+            <!-- Key Performance Indicators (Macro Cards) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass p-5 rounded-3xl border-emerald-500/10 card-hover relative overflow-hidden group">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-2 tracking-widest">Kalori</p>
+                    <h2 id="calDisplay" class="text-xl font-black text-white mb-3 text-emerald-400">0</h2>
+                    <div class="h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
+                        <div id="calBar" class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000 w-0"></div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 rounded-3xl border-blue-500/10 card-hover relative overflow-hidden group">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-2 tracking-widest">Protein (g)</p>
+                    <h2 id="proDisplay" class="text-xl font-black text-white mb-3 text-blue-400">0</h2>
+                    <div class="h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
+                        <div id="proBar" class="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000 w-0"></div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 rounded-3xl border-amber-500/10 card-hover relative overflow-hidden group">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-2 tracking-widest">Karbonhidrat</p>
+                    <h2 id="carbDisplay" class="text-xl font-black text-white mb-3 text-amber-400">0</h2>
+                    <div class="h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
+                        <div id="carbBar" class="h-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-all duration-1000 w-0"></div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 rounded-3xl border-rose-500/10 card-hover relative overflow-hidden group">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-2 tracking-widest">Yağ (g)</p>
+                    <h2 id="fatDisplay" class="text-xl font-black text-white mb-3 text-rose-400">0</h2>
+                    <div class="h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
+                        <div id="fatBar" class="h-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)] transition-all duration-1000 w-0"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Central Hub Tabs -->
+            <div class="space-y-6">
+                <div class="flex p-1.5 bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/5 w-fit">
+                    <button onclick="switchTab('nutrition')" id="nutritionTabBtn" class="px-8 py-3 rounded-xl bg-emerald-500 text-white text-sm font-black transition-all duration-500 shadow-xl shadow-emerald-500/20 flex items-center gap-2">
+                        <i class="fa-solid fa-utensils"></i> Beslenme
+                    </button>
+                    <button onclick="switchTab('fitness')" id="fitnessTabBtn" class="px-8 py-3 rounded-xl text-slate-400 text-sm font-black hover:text-white transition-all duration-500 flex items-center gap-2">
+                        <i class="fa-solid fa-dumbbell"></i> Fitness Coach
+                    </button>
+                    <button onclick="switchTab('progress')" id="progressTabBtn" class="px-8 py-3 rounded-xl text-slate-400 text-sm font-black hover:text-white transition-all duration-500 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line"></i> Gelişim
+                    </button>
+                </div>
+
+                <!-- Content Sections -->
+                <div id="nutritionSection" class="space-y-8">
+                    <!-- AI Input -->
+                    <div class="glass p-8 rounded-[2rem] border-emerald-500/20 shadow-2xl relative">
+                        <h3 class="text-xl font-black text-white mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> Akıllı Besin Girişi
+                        </h3>
+                        <form id="aiLogForm" class="relative group">
+                            <input type="text" id="aiInput" required 
+                                class="w-full bg-slate-950/50 border-2 border-slate-800 rounded-2xl p-5 pr-20 focus:outline-none focus:border-emerald-500 transition-all duration-300 text-white placeholder-slate-600 font-medium" 
+                                placeholder="Bugün neler yedin? (Örn: 2 yumurta, 1 domates...)">
+                            <button type="submit" class="absolute right-3 top-3 bottom-3 bg-emerald-500 hover:bg-emerald-400 text-white px-6 rounded-xl transition-all shadow-lg active:scale-95">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- AI Fridge -->
+                    <div class="glass p-8 rounded-[2rem] border-amber-500/10 shadow-2xl relative overflow-hidden group">
+                        <h3 class="text-xl font-black text-amber-400 mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-kitchen-set"></i> AI Mutfak Şefi
+                        </h3>
+                        <div class="flex gap-3">
+                            <input type="text" id="fridgeInput" 
+                                class="flex-1 bg-slate-950/40 border border-slate-800 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-amber-500/50 transition-all text-white placeholder-slate-700" 
+                                placeholder="Dolaptaki malzemeleri yaz...">
+                            <button onclick="askFridge()" id="fridgeBtn" class="bg-amber-500 hover:bg-amber-400 text-white px-8 rounded-2xl font-black text-xs uppercase transition-all shadow-lg shadow-amber-500/20">
+                                Tarif Üret
+                            </button>
+                        </div>
+                        <div id="fridgeResult" class="hidden mt-6 p-6 bg-slate-950/30 rounded-3xl border border-white/5 text-sm text-slate-300 leading-relaxed max-h-[300px] overflow-y-auto"></div>
+                    </div>
+
+                    <!-- Meals List -->
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Günlük Kayıtlar</h3>
+                        <div id="foodEntriesList" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <div id="fitnessSection" class="hidden space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+                    <div class="glass p-8 rounded-[2rem] border-blue-500/20 shadow-2xl">
+                         <h3 class="text-xl font-black text-blue-400 mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-dumbbell"></i> Personal Trainer
+                        </h3>
+                        <form id="workoutForm" class="relative">
+                            <input type="text" id="workoutInput" required 
+                                class="w-full bg-slate-950/50 border-2 border-slate-800 rounded-2xl p-5 pr-20 focus:outline-none focus:border-blue-500 transition-all duration-300 text-white placeholder-slate-600" 
+                                placeholder="Antrenmanını anlat... (Örn: 3 set bench press 60kg)">
+                            <button type="submit" class="absolute right-3 top-3 bottom-3 bg-blue-500 hover:bg-blue-400 text-white px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20">
+                                <i class="fa-solid fa-bolt"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div id="weeklyAIReport" class="glass p-6 rounded-3xl border-emerald-500/10 italic text-slate-300 text-sm leading-relaxed hidden"></div>
+                    
+                    <div id="exerciseStatsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Antrenman Geçmişi</h3>
+                        <div id="workoutList" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <div id="progressSection" class="hidden space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="glass p-8 rounded-[2rem] border-indigo-500/20 shadow-2xl flex flex-col justify-center">
+                            <p class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-tighter">Kilo Kaydı</p>
+                            <form id="weightForm" class="flex gap-2">
+                                <input type="number" id="weightInput" step="0.1" required 
+                                    class="flex-1 bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-4 text-2xl font-black text-white focus:outline-none focus:border-indigo-500 transition" 
+                                    placeholder="0.0">
+                                <button type="submit" class="bg-indigo-500 hover:bg-indigo-400 text-white px-6 rounded-2xl font-black transition-all shadow-lg active:scale-95">
+                                    KAYDET
+                                </button>
+                            </form>
+                        </div>
+                        <div class="md:col-span-2 glass p-8 rounded-[2rem] border-white/5 min-h-[300px]">
+                             <h3 class="text-sm font-black text-indigo-400 uppercase mb-4 tracking-widest">İlerleme Grafiği</h3>
+                             <div class="h-[250px]">
+                                <canvas id="weightChart"></canvas>
+                             </div>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (4/12) -->
+        <div class="lg:col-span-4 space-y-8">
+            <!-- Hydration -->
+            <div class="glass p-8 rounded-[2rem] border-cyan-500/10 shadow-2xl relative overflow-hidden group">
+                <div class="relative z-10 text-center">
+                    <h3 class="text-xl font-black text-cyan-400 flex items-center justify-center gap-3 mb-8">
+                        <i class="fa-solid fa-droplet animate-bounce"></i> Su Takibi
+                    </h3>
+                    <div class="flex justify-center items-end gap-2 mb-8">
+                        <h2 id="waterDisplay" class="text-6xl font-black text-white tracking-tighter">0</h2>
+                        <span class="text-sm font-bold text-slate-500 mb-2">/ 2500 ML</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <button onclick="addWater(250)" class="h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-black text-xs hover:bg-cyan-500 hover:text-white transition-all">+250 ML</button>
+                        <button onclick="addWater(500)" class="h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-black text-xs hover:bg-cyan-500 hover:text-white transition-all">+500 ML</button>
+                    </div>
+                    <button onclick="resetWater()" class="text-[10px] text-slate-600 font-black uppercase tracking-widest hover:text-red-400 transition">TÜMÜNÜ SIFIRLA</button>
+                </div>
+            </div>
+
+            <!-- Mini Weekly History -->
+            <div class="glass p-8 rounded-[2rem] border-white/5 shadow-2xl">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Haftalık Kalori</h3>
+                <div class="h-[150px]">
+                    <canvas id="historyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chat Button -->
+<button onclick="toggleChat()" class="fixed bottom-8 right-8 h-16 w-16 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full shadow-2xl z-50 flex items-center justify-center transition-all duration-300 hover:rotate-12 active:scale-90 shadow-emerald-500/40">
+    <i class="fa-solid fa-robot text-2xl"></i>
+</button>
+
+<div id="aiChatWindow" class="fixed bottom-28 right-8 w-[380px] h-[550px] glass rounded-[2.5rem] shadow-2xl z-50 border-emerald-500/20 hidden flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+    <div class="p-6 bg-emerald-500/10 border-b border-white/10 flex items-center justify-between">
+        <h4 class="font-black text-sm text-white">AI Health Coach</h4>
+        <button onclick="getRecommendation()" class="text-[10px] bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl font-black">ÖNERİ AL</button>
+    </div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+    <div class="p-6 bg-slate-950/30 border-t border-white/10">
+        <form id="chatForm" class="flex gap-2">
+            <input type="text" id="chatInput" class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-all text-white" placeholder="Bir şey sor...">
+            <button type="submit" class="bg-emerald-500 text-white p-3 rounded-2xl"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/auth';
+
+    let currentDate = new Date().toISOString().split('T')[0];
+
+    // TAB SYSTEM
+    function switchTab(tab) {
+        const tabs = ['nutrition', 'fitness', 'progress'];
+        const btns = {
+            nutrition: document.getElementById('nutritionTabBtn'),
+            fitness: document.getElementById('fitnessTabBtn'),
+            progress: document.getElementById('progressTabBtn')
+        };
+        const sections = {
+            nutrition: document.getElementById('nutritionSection'),
+            fitness: document.getElementById('fitnessSection'),
+            progress: document.getElementById('progressSection')
+        };
+
+        tabs.forEach(t => {
+            if (t === tab) {
+                btns[t].className = 'px-8 py-3 rounded-xl bg-emerald-500 text-white text-sm font-black transition-all duration-500 shadow-xl shadow-emerald-500/20 flex items-center gap-2';
+                sections[t].classList.remove('hidden');
+            } else {
+                btns[t].className = 'px-8 py-3 rounded-xl text-slate-400 text-sm font-black hover:text-white transition-all duration-500 flex items-center gap-2';
+                sections[t].classList.add('hidden');
+            }
+        });
+
+        if (tab === 'fitness') { fetchWorkouts(); fetchWeeklyStats(); fetchWeeklyReport(); }
+        if (tab === 'progress') { fetchWeightHistory(); }
+    }
+
+    // NUTRITION LOGIC
+    async function fetchSummary(date = currentDate) {
+        currentDate = date;
+        document.getElementById('selectedDateDisplay').innerText = date === new Date().toISOString().split('T')[0] ? 'BUGÜN' : date;
+        try {
+            const res = await fetch(`/api/nutrition/summary?date=${date}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            if (res.ok) updateUI(data);
+        } catch (err) {}
+    }
+
+    function updateUI(data) {
+        const setVal = (id, val) => document.getElementById(id).innerText = Math.round(val);
+        const setBar = (id, cur, target) => document.getElementById(id).style.width = target > 0 ? `${Math.min((cur / target) * 100, 100)}%` : '0%';
+
+        setVal('calDisplay', data.calories);
+        setVal('proDisplay', data.protein);
+        setVal('carbDisplay', data.carbs);
+        setVal('fatDisplay', data.fats);
+
+        setBar('calBar', data.calories, data.targets.calories);
+        setBar('proBar', data.protein, data.targets.protein);
+        setBar('carbBar', data.carbs, data.targets.carbs);
+        setBar('fatBar', data.fats, data.targets.fats);
+
+        document.getElementById('waterDisplay').innerText = Math.round(data.water);
+        
+        const list = document.getElementById('foodEntriesList');
+        list.innerHTML = '';
+        if (data.meals.length === 0) {
+            list.innerHTML = '<p class="text-slate-600 text-center py-10 font-bold italic uppercase tracking-tighter">Henüz bir kayıt yok</p>';
+        } else {
+            data.meals.forEach((meal, idx) => {
+                const div = document.createElement('div');
+                div.className = 'glass rounded-3xl overflow-hidden border-white/5';
+                div.innerHTML = `
+                    <div class="p-6 cursor-pointer hover:bg-white/5 transition flex items-center justify-between" onclick="toggleMealDetails(${idx})">
+                        <div class="flex items-center gap-4">
+                            <div class="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400">
+                                <i class="fa-solid ${meal.is_ai ? 'fa-wand-magic-sparkles' : 'fa-utensils'} text-xs"></i>
+                            </div>
+                            <p class="font-bold text-sm text-white">${meal.title}</p>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <p class="font-black text-emerald-400">${meal.total_calories} <span class="text-[8px] text-slate-500 uppercase">kcal</span></p>
+                            </div>
+                            <button onclick="event.stopPropagation(); deleteMealGroup('${meal.title.replace(/'/g, "\\'")}')" class="text-slate-600 hover:text-red-400"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </div>
+                    <div id="meal-details-${idx}" class="hidden p-6 bg-slate-950/20 border-t border-white/5 space-y-3">
+                        ${meal.items.map(it => `<div class="flex justify-between text-xs text-slate-400"><span>${it.name} (${it.quantity})</span><span>${it.total_calories} kcal</span></div>`).join('')}
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+    }
+
+    function toggleMealDetails(idx) {
+        document.getElementById(`meal-details-${idx}`).classList.toggle('hidden');
+    }
+
+    async function addWater(amount) {
+        await fetch('/api/nutrition/water', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount }) });
+        fetchSummary();
+    }
+
+    async function resetWater() {
+        if (confirm('Sıfırlansın mı?')) {
+            await fetch('/api/nutrition/water', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            fetchSummary();
+        }
+    }
+
+    // FITNESS LOGIC
+    async function fetchWorkouts() {
+        const res = await fetch('/api/fitness/workouts', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const list = document.getElementById('workoutList');
+        list.innerHTML = '';
+        data.forEach(w => {
+            const div = document.createElement('div');
+            div.className = 'glass p-6 rounded-[2rem] space-y-4';
+            div.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <p class="text-xs font-bold text-slate-500 uppercase">${w.date}</p>
+                    <button onclick="deleteWorkout(${w.id})" class="text-slate-600 hover:text-red-400"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                </div>
+                <p class="text-sm font-bold text-white">${w.description}</p>
+                <div class="bg-blue-500/5 p-4 rounded-2xl text-xs text-slate-300 italic border border-blue-500/10">"${w.feedback}"</div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    async function fetchWeeklyReport() {
+        const res = await fetch('/api/fitness/stats/report', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const el = document.getElementById('weeklyAIReport');
+        if (res.ok) { el.innerText = data.report; el.classList.remove('hidden'); }
+    }
+
+    async function fetchWeeklyStats() {
+        const res = await fetch('/api/fitness/stats/weekly', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const grid = document.getElementById('exerciseStatsGrid');
+        grid.innerHTML = '';
+        Object.entries(data).forEach(([name, s]) => {
+            const div = document.createElement('div');
+            div.className = 'glass p-4 rounded-2xl text-center';
+            div.innerHTML = `<p class="text-[8px] text-slate-500 uppercase font-black mb-1">${name}</p><p class="text-sm font-black text-white">${s.max_weight}kg</p>`;
+            grid.appendChild(div);
+        });
+    }
+
+    // PROGRESS LOGIC
+    async function fetchWeightHistory() {
+        const res = await fetch('/api/auth/weight-history', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        initWeightChart(data);
+    }
+
+    let weightChart;
+    function initWeightChart(data) {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        if (weightChart) weightChart.destroy();
+        weightChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: data.map(d => d.date), datasets: [{ data: data.map(d => d.weight), borderColor: '#6366f1', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    // FRIDGE
+    async function askFridge() {
+        const btn = document.getElementById('fridgeBtn');
+        const resEl = document.getElementById('fridgeResult');
+        btn.disabled = true; resEl.classList.remove('hidden'); resEl.innerText = 'Şef hazırlanıyor...';
+        const res = await fetch('/api/ai/fridge-assistant', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ ingredients: document.getElementById('fridgeInput').value }) });
+        const data = await res.json();
+        resEl.innerHTML = data.recipe.replace(/\n/g, '<br>');
+        btn.disabled = false;
+    }
+
+    // FORMS
+    document.getElementById('aiLogForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const text = document.getElementById('aiInput').value;
+        await fetch('/api/nutrition/log-ai', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
+        document.getElementById('aiInput').value = ''; fetchSummary(); fetchWeeklyHistory();
+    };
+
+    document.getElementById('workoutForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const text = document.getElementById('workoutInput').value;
+        await fetch('/api/fitness/workout', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
+        document.getElementById('workoutInput').value = ''; fetchWorkouts();
+    };
+
+    document.getElementById('weightForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const weight = document.getElementById('weightInput').value;
+        await fetch('/api/auth/weight', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ weight }) });
+        fetchWeightHistory(); fetchSummary();
+    };
+
+    function toggleChat() { document.getElementById('aiChatWindow').classList.toggle('hidden'); }
+    
+    async function fetchWeeklyHistory() {
+        const res = await fetch('/api/nutrition/weekly-history', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        initHistoryChart(data);
+    }
+
+    let historyChart;
+    function initHistoryChart(data) {
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        if (historyChart) historyChart.destroy();
+        historyChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: data.map(d => d.date), datasets: [{ data: data.map(d => d.calories), backgroundColor: '#10b981', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    async function deleteMealGroup(promptText) {
+        if (confirm('Silinsin mi?')) {
+            await fetch('/api/nutrition/log/group', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ prompt_text: promptText, date: currentDate }) });
+            fetchSummary();
+        }
+    }
+
+    async function deleteWorkout(id) {
+        if (confirm('Silinsin mi?')) {
+            await fetch(`/api/fitness/workout/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            fetchWorkouts();
+        }
+    }
+
+    function changeDate(days) {
+        const d = new Date(currentDate);
+        d.setDate(d.getDate() + days);
+        const newDate = d.toISOString().split('T')[0];
+        document.getElementById('datePicker').value = newDate;
+        fetchSummary(newDate);
+    }
+
+    window.onload = () => {
+        fetchSummary();
+        fetchWeeklyHistory();
+        // Set date picker to today
+        document.getElementById('datePicker').value = currentDate;
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+{% block title %}Giriş Yap / Kayıt Ol{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-[70vh]">
+    <div class="glass p-10 rounded-3xl w-full max-w-md shadow-2xl border border-emerald-500/20">
+        
+        <!-- Tabs -->
+        <div class="flex mb-8 border-b border-white/10">
+            <button id="loginTab" class="flex-1 pb-3 border-b-2 border-emerald-500 font-bold text-emerald-400">Giriş Yap</button>
+            <button id="registerTab" class="flex-1 pb-3 border-b-2 border-transparent hover:text-emerald-400 transition">Kayıt Ol</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="space-y-6">
+            <div class="space-y-2">
+                <label class="block text-sm text-slate-400">E-posta</label>
+                <input type="email" name="email" autocomplete="email" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 focus:outline-none focus:border-emerald-500" placeholder="mail@example.com">
+            </div>
+            <div class="space-y-2">
+                <label class="block text-sm text-slate-400">Şifre</label>
+                <input type="password" name="password" autocomplete="current-password" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 focus:outline-none focus:border-emerald-500" placeholder="••••••••">
+            </div>
+            <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20">
+                Giriş Yap
+            </button>
+        </form>
+
+        <!-- Register Form (Hidden by default) -->
+        <form id="registerForm" class="space-y-4 hidden">
+            <div class="space-y-1">
+                <label class="block text-sm text-slate-400">Kullanıcı Adı</label>
+                <input type="text" name="username" autocomplete="username" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="space-y-1">
+                <label class="block text-sm text-slate-400">E-posta</label>
+                <input type="email" name="email" autocomplete="email" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="block text-sm text-slate-400">Yaş</label>
+                    <input type="number" name="age" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="space-y-1">
+                    <label class="block text-sm text-slate-400">Boy (cm)</label>
+                    <input type="number" name="height" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="space-y-1">
+                    <label class="block text-sm text-slate-400">Kilo (kg)</label>
+                    <input type="number" name="weight" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="space-y-1">
+                    <label class="block text-sm text-slate-400">Cinsiyet</label>
+                    <select name="gender" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+                        <option value="male">Erkek</option>
+                        <option value="female">Kadın</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="block text-sm text-slate-400">Hedef</label>
+                    <select name="goal" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+                        <option value="hypertrophy">Kas Gelişimi</option>
+                        <option value="fat_loss">Yağ Yakımı</option>
+                        <option value="maintenance">Kilo Koruma</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="block text-sm text-slate-400">Aktivite</label>
+                    <select name="activity_level" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+                        <option value="sedentary">Masa Başı</option>
+                        <option value="lightly_active">Hafif Aktif</option>
+                        <option value="moderately_active">Orta Aktif</option>
+                        <option value="very_active">Çok Aktif</option>
+                    </select>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label class="block text-sm text-slate-400">Şifre</label>
+                <input type="password" name="password" autocomplete="new-password" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+            </div>
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white font-bold py-3 rounded-xl transition mt-4">
+                Hesap Oluştur
+            </button>
+        </form>
+
+        <p id="authMessage" class="mt-4 text-center text-sm hidden"></p>
+    </div>
+</div>
+
+<script>
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const authMessage = document.getElementById('authMessage');
+
+    loginTab.onclick = () => {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        loginTab.className = "flex-1 pb-3 border-b-2 border-emerald-500 font-bold text-emerald-400";
+        registerTab.className = "flex-1 pb-3 border-b-2 border-transparent hover:text-emerald-400 transition";
+    };
+
+    registerTab.onclick = () => {
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        registerTab.className = "flex-1 pb-3 border-b-2 border-emerald-500 font-bold text-emerald-400";
+        loginTab.className = "flex-1 pb-3 border-b-2 border-transparent hover:text-emerald-400 transition";
+    };
+
+    // Handle Login
+    loginForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(loginForm);
+        const data = Object.fromEntries(formData);
+        
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem('token', result.auth_token);
+                window.location.href = '/';
+            } else {
+                showMessage(result.message, 'text-red-400');
+            }
+        } catch (err) { showMessage('Bağlantı hatası!', 'text-red-400'); }
+    };
+
+    // Handle Register
+    registerForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(registerForm);
+        const data = Object.fromEntries(formData);
+        // Convert numbers
+        ['age', 'height', 'weight'].forEach(k => data[k] = Number(data[k]));
+        
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                showMessage('Kayıt başarılı! Şimdi giriş yapabilirsiniz.', 'text-emerald-400');
+                loginTab.click();
+            } else { showMessage(result.message, 'text-red-400'); }
+        } catch (err) { showMessage('Bağlantı hatası!', 'text-red-400'); }
+    };
+
+    function showMessage(text, color) {
+        authMessage.innerText = text;
+        authMessage.className = `mt-4 text-center text-sm ${color}`;
+        authMessage.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

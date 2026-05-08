@@ -27,15 +27,26 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
+        # Check standard Authorization header
         if 'Authorization' in request.headers:
             auth_header = request.headers['Authorization']
             if len(auth_header.split(" ")) > 1:
                 token = auth_header.split(" ")[1]
+            else:
+                token = auth_header
+        # Fallback for proxy/server environments
+        elif request.environ.get('HTTP_AUTHORIZATION'):
+            auth_header = request.environ.get('HTTP_AUTHORIZATION')
+            if len(auth_header.split(" ")) > 1:
+                token = auth_header.split(" ")[1]
+            else:
+                token = auth_header
         
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
         
         try:
+            # Note: Ensure SECRET_KEY in env is > 32 chars
             data = jwt.decode(token, current_app.config.get('SECRET_KEY'), algorithms=["HS256"])
             current_user = User.query.get(data['sub'])
             if not current_user:

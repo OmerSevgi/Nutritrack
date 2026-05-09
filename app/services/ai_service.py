@@ -11,7 +11,7 @@ class AIService:
                 print("DEBUG: [AIService] GEMINI_API_KEY is None!")
             
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            self.model = genai.GenerativeModel('gemini-flash-latest')
         except Exception as e:
             print(f"DEBUG: [AIService] Failed to initialize Gemini: {str(e)}")
 

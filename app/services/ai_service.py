@@ -58,7 +58,14 @@ class AIService:
             data = json.loads(raw_text)
             return data.get("besinler", [])
         except Exception as e:
+            # Debug: Liste modelleri ve hatayı yazdır
             print(f"Error parsing food input: {str(e)}")
+            try:
+                for m in genai.list_models():
+                    if 'generateContent' in m.supported_generation_methods:
+                        print(f"Supported model: {m.name}")
+            except Exception as inner_e:
+                print(f"Could not list models: {inner_e}")
             return []
 
     def ask_coach(self, query):

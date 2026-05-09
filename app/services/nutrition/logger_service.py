@@ -48,9 +48,17 @@ class NutritionLoggerService:
             match = re.search(r"(\d+\.?\d*)", raw_qty)
             qty = float(match.group(1)) if match else 1.0
             
-            food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
+            # Pirinç türevlerini standartlaştır
+            search_name = name.lower()
+            rice_variants = ['pirinç', 'toz pirinç', 'cream rice', 'rice cream', 'pirinc']
+            if any(variant in search_name for variant in rice_variants):
+                search_name = "raw rice"
+            else:
+                search_name = name
+
+            food = FoodItem.query.filter(FoodItem.name.ilike(search_name)).first()
             if not food:
-                api_data = ninjas_client.get_nutrition(name)
+                api_data = ninjas_client.get_nutrition(search_name)
                 nutrition = api_data[0] if api_data else {}
                 food = FoodItem(
                     name=name,

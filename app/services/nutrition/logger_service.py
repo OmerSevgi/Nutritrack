@@ -51,22 +51,27 @@ class NutritionLoggerService:
             # Pirinç ve Pilav türevlerini ÇİĞ (raw) olarak standartlaştır
             search_name = name.lower()
             rice_variants = ['pirinç', 'toz pirinç', 'cream rice', 'rice cream', 'pirinc', 'pilav', 'pilaf', 'rice']
-            if any(variant == search_name or variant in search_name for variant in rice_variants):
+            is_rice = any(variant == search_name or variant in search_name for variant in rice_variants)
+            
+            if is_rice:
                 search_name = "raw rice"
             else:
                 search_name = name
 
             food = FoodItem.query.filter(FoodItem.name.ilike(search_name)).first()
-            if not food:
+            if not food or is_rice: # Pirinç ise her zaman API'den tazele (garantiye al)
                 api_data = ninjas_client.get_nutrition(search_name)
                 nutrition = api_data[0] if api_data else {}
-                food = FoodItem(
-                    name=name,
-                    calories=item.get('kalori') or nutrition.get('calories', 0),
-                    protein=item.get('protein') or nutrition.get('protein_g', 0),
-                    carbs=item.get('karbonhidrat') or nutrition.get('carbohydrates_total_g', 0),
-                    fats=item.get('yag') or nutrition.get('fat_total_g', 0)
-                )
+                
+                if not food:
+                    food = FoodItem(name=search_name)
+                
+                # Değerleri her zaman API'den al (Pirinç durumunda AI tahminini ez)
+                food.calories = float(nutrition.get('calories', 0))
+                food.protein = float(nutrition.get('protein_g', 0))
+                food.carbs = float(nutrition.get('carbohydrates_total_g', 0))
+                food.fats = float(nutrition.get('fat_total_g', 0))
+                
                 db.session.add(food)
                 db.session.flush()
             

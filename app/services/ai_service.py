@@ -11,7 +11,7 @@ class AIService:
                 print("DEBUG: [AIService] GEMINI_API_KEY is None!")
             
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-2.0-flash')
+            self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
         except Exception as e:
             print(f"DEBUG: [AIService] Failed to initialize Gemini: {str(e)}")
 
@@ -58,14 +58,7 @@ class AIService:
             data = json.loads(raw_text)
             return data.get("besinler", [])
         except Exception as e:
-            # Debug: Liste modelleri ve hatayı yazdır
             print(f"Error parsing food input: {str(e)}")
-            try:
-                for m in genai.list_models():
-                    if 'generateContent' in m.supported_generation_methods:
-                        print(f"Supported model: {m.name}")
-            except Exception as inner_e:
-                print(f"Could not list models: {inner_e}")
             return []
 
     def ask_coach(self, query):

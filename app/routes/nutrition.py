@@ -55,18 +55,17 @@ def log_ai_meal(current_user):
     if not text:
         return jsonify({'error': 'No text provided'}), 400
         
-    # CalorieNinjas API çağrısı
+    ai_service = AIService()
+    # 1. AI ile besin listesini ayıkla
+    food_names_raw = ai_service.ask_coach(f"Extract only food names as comma-separated list in English from this text: '{text}'. If none found, return empty.")
+    food_list = [f.strip() for f in food_names_raw.split(',') if f.strip()]
+    
+    if not food_list:
+        return jsonify({'error': 'Could not parse food items'}), 400
+        
     from app.integrations.ninjas_client import CalorieNinjasClient
     ninjas_client = CalorieNinjasClient()
-
-    print(f"DEBUG: Calling CalorieNinjas for query: {text}")
-    food_items_data = ninjas_client.get_nutrition(text)
-    print(f"DEBUG: CalorieNinjas response: {food_items_data}")
-
-    if not food_items_data:
-        return jsonify({'error': 'Could not find nutrition data'}), 400
-        
-    # Get or create today's log
+    
     today = datetime.utcnow().date()
     log = DailyLog.query.filter_by(user_id=current_user.id, date=today).first()
     if not log:
@@ -76,12 +75,15 @@ def log_ai_meal(current_user):
     
     try:
         logged_items = []
-        for item in food_items_data:
+        for food_name in food_list:
+            data = ninjas_client.get_nutrition(food_name)
+            item = data[0] if data and len(data) > 0 else None
+            if not item: continue
+            
             name = item.get('name')
-            qty = item.get('serving_size_g', 100) / 100  # Varsayılan 100g bazlı
+            qty = 1.0 # Basitlik için 1 birim kabul ediyoruz
             
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
-            
             if not food:
                 food = FoodItem(
                     name=name,
@@ -93,7 +95,6 @@ def log_ai_meal(current_user):
                 db.session.add(food)
             
             db.session.flush()
-            
             entry = LogEntry(
                 daily_log_id=log.id,
                 food_item_id=food.id,
@@ -136,7 +137,7 @@ def get_weekly_history(current_user):
 @token_required
 def log_water(current_user):
     data = request.get_json()
-    amount = data.get('amount', 250) # default 250ml
+    amount = data.get('amount', 250)
     
     today = datetime.utcnow().date()
     log = DailyLog.query.filter_by(user_id=current_user.id, date=today).first()
@@ -189,7 +190,6 @@ def delete_log_entry(current_user, entry_id):
     if not entry:
         return jsonify({'error': 'Entry not found'}), 404
     
-    # Check if this entry belongs to the current user via daily_log
     if entry.daily_log.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
     

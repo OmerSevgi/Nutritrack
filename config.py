@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'default_secret_key')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'super-secret-key-that-is-at-least-32-chars-long-1234567890')
     
     # Render/Heroku provide DATABASE_URL. If it starts with 'postgres://', 
     # SQLAlchemy requires 'postgresql://' for version 1.4+ compatibility.

@@ -255,8 +255,28 @@
 </div>
 
 <script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = '/auth';
+    // Token yönetimi
+    const getToken = () => localStorage.getItem('token');
+    
+    // Merkezi fetch fonksiyonu
+    async function secureFetch(url, options = {}) {
+        const token = getToken();
+        if (!token) { window.location.href = '/auth'; return null; }
+        
+        options.headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+        
+        const res = await fetch(url, options);
+        if (res.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/auth';
+            return null;
+        }
+        return res;
+    }
 
     let currentDate = new Date().toISOString().split('T')[0];
 
@@ -292,32 +312,34 @@
     async function fetchSummary(date = currentDate) {
         currentDate = date;
         document.getElementById('selectedDateDisplay').innerText = date === new Date().toISOString().split('T')[0] ? 'BUGÜN' : date;
-        try {
-            const res = await fetch(`/api/nutrition/summary?date=${date}`, { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
-            const data = await res.json();
-            if (res.ok) updateUI(data);
-        } catch (err) {}
+        
+        const res = await secureFetch(`/api/nutrition/summary?date=${date}`);
+        if (!res) return;
+        const data = await res.json();
+        if (res.ok) updateUI(data);
     }
 
     function updateUI(data) {
-        const setVal = (id, val) => document.getElementById(id).innerText = Math.round(val);
-        const setBar = (id, cur, target) => document.getElementById(id).style.width = target > 0 ? `${Math.min((cur / target) * 100, 100)}%` : '0%';
+        const setVal = (id, val) => document.getElementById(id).innerText = Math.round(val || 0);
+        const setBar = (id, cur, target) => document.getElementById(id).style.width = (target && target > 0) ? `${Math.min((cur / target) * 100, 100)}%` : '0%';
 
         setVal('calDisplay', data.calories);
         setVal('proDisplay', data.protein);
         setVal('carbDisplay', data.carbs);
         setVal('fatDisplay', data.fats);
 
-        setBar('calBar', data.calories, data.targets.calories);
-        setBar('proBar', data.protein, data.targets.protein);
-        setBar('carbBar', data.carbs, data.targets.carbs);
-        setBar('fatBar', data.fats, data.targets.fats);
+        if (data.targets) {
+            setBar('calBar', data.calories, data.targets.calories);
+            setBar('proBar', data.protein, data.targets.protein);
+            setBar('carbBar', data.carbs, data.targets.carbs);
+            setBar('fatBar', data.fats, data.targets.fats);
+        }
 
-        document.getElementById('waterDisplay').innerText = Math.round(data.water);
+        document.getElementById('waterDisplay').innerText = Math.round(data.water || 0);
         
         const list = document.getElementById('foodEntriesList');
         list.innerHTML = '';
-        if (data.meals.length === 0) {
+        if (!data.meals || data.meals.length === 0) {
             list.innerHTML = '<p class="text-slate-600 text-center py-10 font-bold italic uppercase tracking-tighter">Henüz bir kayıt yok</p>';
         } else {
             data.meals.forEach((meal, idx) => {
@@ -352,63 +374,71 @@
     }
 
     async function addWater(amount) {
-        await fetch('/api/nutrition/water', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount }) });
+        await secureFetch('/api/nutrition/water', { method: 'POST', body: JSON.stringify({ amount }) });
         fetchSummary();
     }
 
     async function resetWater() {
         if (confirm('Sıfırlansın mı?')) {
-            await fetch('/api/nutrition/water', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
+            await secureFetch('/api/nutrition/water', { method: 'DELETE' });
             fetchSummary();
         }
     }
 
     // FITNESS LOGIC
     async function fetchWorkouts() {
-        const res = await fetch('/api/fitness/workouts', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
+        const res = await secureFetch('/api/fitness/workouts');
+        if (!res) return;
         const data = await res.json();
         const list = document.getElementById('workoutList');
         list.innerHTML = '';
-        data.forEach(w => {
-            const div = document.createElement('div');
-            div.className = 'glass p-6 rounded-[2rem] space-y-4';
-            div.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <p class="text-xs font-bold text-slate-500 uppercase">${w.date}</p>
-                    <button onclick="deleteWorkout(${w.id})" class="text-slate-600 hover:text-red-400"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                </div>
-                <p class="text-sm font-bold text-white">${w.description}</p>
-                <div class="bg-blue-500/5 p-4 rounded-2xl text-xs text-slate-300 italic border border-blue-500/10">"${w.feedback}"</div>
-            `;
-            list.appendChild(div);
-        });
+        if (Array.isArray(data)) {
+            data.forEach(w => {
+                const div = document.createElement('div');
+                div.className = 'glass p-6 rounded-[2rem] space-y-4';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <p class="text-xs font-bold text-slate-500 uppercase">${w.date}</p>
+                        <button onclick="deleteWorkout(${w.id})" class="text-slate-600 hover:text-red-400"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                    <p class="text-sm font-bold text-white">${w.description}</p>
+                    <div class="bg-blue-500/5 p-4 rounded-2xl text-xs text-slate-300 italic border border-blue-500/10">"${w.feedback}"</div>
+                `;
+                list.appendChild(div);
+            });
+        }
     }
 
     async function fetchWeeklyReport() {
-        const res = await fetch('/api/fitness/stats/report', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
+        const res = await secureFetch('/api/fitness/stats/report');
+        if (!res) return;
         const data = await res.json();
         const el = document.getElementById('weeklyAIReport');
         if (res.ok) { el.innerText = data.report; el.classList.remove('hidden'); }
     }
 
     async function fetchWeeklyStats() {
-        const res = await fetch('/api/fitness/stats/weekly', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
+        const res = await secureFetch('/api/fitness/stats/weekly');
+        if (!res) return;
         const data = await res.json();
         const grid = document.getElementById('exerciseStatsGrid');
         grid.innerHTML = '';
-        Object.entries(data).forEach(([name, s]) => {
-            const div = document.createElement('div');
-            div.className = 'glass p-4 rounded-2xl text-center';
-            div.innerHTML = `<p class="text-[8px] text-slate-500 uppercase font-black mb-1">${name}</p><p class="text-sm font-black text-white">${s.max_weight}kg</p>`;
-            grid.appendChild(div);
-        });
+        if (data && typeof data === 'object') {
+            Object.entries(data).forEach(([name, s]) => {
+                const div = document.createElement('div');
+                div.className = 'glass p-4 rounded-2xl text-center';
+                div.innerHTML = `<p class="text-[8px] text-slate-500 uppercase font-black mb-1">${name}</p><p class="text-sm font-black text-white">${s.max_weight}kg</p>`;
+                grid.appendChild(div);
+            });
+        }
     }
 
     // PROGRESS LOGIC
     async function fetchWeightHistory() {
-        const res = await fetch('/api/auth/weight-history', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
+        const res = await secureFetch('/api/auth/weight-history');
+        if (!res) return;
         const data = await res.json();
-        initWeightChart(data);
+        if (Array.isArray(data)) initWeightChart(data);
     }
 
     let weightChart;
@@ -427,7 +457,8 @@
         const btn = document.getElementById('fridgeBtn');
         const resEl = document.getElementById('fridgeResult');
         btn.disabled = true; resEl.classList.remove('hidden'); resEl.innerText = 'Şef hazırlanıyor...';
-        const res = await fetch('/api/ai/fridge-assistant', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ ingredients: document.getElementById('fridgeInput').value }) });
+        const res = await secureFetch('/api/ai/fridge-assistant', { method: 'POST', body: JSON.stringify({ ingredients: document.getElementById('fridgeInput').value }) });
+        if (!res) { btn.disabled = false; return; }
         const data = await res.json();
         resEl.innerHTML = data.recipe.replace(/\n/g, '<br>');
         btn.disabled = false;
@@ -437,30 +468,31 @@
     document.getElementById('aiLogForm').onsubmit = async (e) => {
         e.preventDefault();
         const text = document.getElementById('aiInput').value;
-        await fetch('/api/nutrition/log-ai', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
+        await secureFetch('/api/nutrition/log-ai', { method: 'POST', body: JSON.stringify({ text }) });
         document.getElementById('aiInput').value = ''; fetchSummary(); fetchWeeklyHistory();
     };
 
     document.getElementById('workoutForm').onsubmit = async (e) => {
         e.preventDefault();
         const text = document.getElementById('workoutInput').value;
-        await fetch('/api/fitness/workout', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
+        await secureFetch('/api/fitness/workout', { method: 'POST', body: JSON.stringify({ text }) });
         document.getElementById('workoutInput').value = ''; fetchWorkouts();
     };
 
     document.getElementById('weightForm').onsubmit = async (e) => {
         e.preventDefault();
         const weight = document.getElementById('weightInput').value;
-        await fetch('/api/auth/weight', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ weight }) });
+        await secureFetch('/api/auth/weight', { method: 'POST', body: JSON.stringify({ weight }) });
         fetchWeightHistory(); fetchSummary();
     };
 
     function toggleChat() { document.getElementById('aiChatWindow').classList.toggle('hidden'); }
     
     async function fetchWeeklyHistory() {
-        const res = await fetch('/api/nutrition/weekly-history', { headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
+        const res = await secureFetch('/api/nutrition/weekly-history');
+        if (!res) return;
         const data = await res.json();
-        initHistoryChart(data);
+        if (Array.isArray(data)) initHistoryChart(data);
     }
 
     let historyChart;
@@ -476,14 +508,14 @@
 
     async function deleteMealGroup(promptText) {
         if (confirm('Silinsin mi?')) {
-            await fetch('/api/nutrition/log/group', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ prompt_text: promptText, date: currentDate }) });
+            await secureFetch('/api/nutrition/log/group', { method: 'DELETE', body: JSON.stringify({ prompt_text: promptText, date: currentDate }) });
             fetchSummary();
         }
     }
 
     async function deleteWorkout(id) {
         if (confirm('Silinsin mi?')) {
-            await fetch(`/api/fitness/workout/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'X-Authorization': token } });
+            await secureFetch(`/api/fitness/workout/${id}`, { method: 'DELETE' });
             fetchWorkouts();
         }
     }
@@ -499,7 +531,6 @@
     window.onload = () => {
         fetchSummary();
         fetchWeeklyHistory();
-        // Set date picker to today
         document.getElementById('datePicker').value = currentDate;
     };
 </script>

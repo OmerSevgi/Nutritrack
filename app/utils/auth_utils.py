@@ -49,10 +49,13 @@ def token_required(f):
             if not current_user:
                 return jsonify({'message': 'User not found!'}), 401
         except jwt.ExpiredSignatureError:
+            print("LOG ERROR: Token expired")
             return jsonify({'message': 'Token expired!'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'message': 'Token is invalid!'}), 401
+        except jwt.InvalidTokenError as e:
+            print(f"LOG ERROR: Invalid token: {str(e)}")
+            return jsonify({'message': f'Token is invalid! {str(e)}'}), 401
         except Exception as e:
+            print(f"LOG ERROR: Unexpected auth error: {str(e)}")
             return jsonify({'message': f'Error: {str(e)}'}), 401
             
         return f(current_user, *args, **kwargs)

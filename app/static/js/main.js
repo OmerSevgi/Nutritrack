@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
             const input = document.getElementById('aiInput');
+            if (!input.value) return;
+            
             setButtonLoading(btn, true);
             await secureFetch('/api/nutrition/log-ai', { method: 'POST', body: JSON.stringify({ text: input.value }) });
             setButtonLoading(btn, false);

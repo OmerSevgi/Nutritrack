@@ -25,12 +25,22 @@ async function secureFetch(url, options = {}) {
 }
 
 function setButtonLoading(btn, isLoading) {
+    if (!btn) return;
     if (isLoading) {
-        btn.dataset.originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i>';
+        btn.dataset.originalContent = btn.innerHTML;
         btn.disabled = true;
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+        btn.innerHTML = `
+            <div class="flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-notch animate-spin"></i>
+                <span class="text-[10px] font-black uppercase tracking-widest">İşleniyor...</span>
+            </div>
+        `;
     } else {
-        btn.innerHTML = btn.dataset.originalText;
+        if (btn.dataset.originalContent) {
+            btn.innerHTML = btn.dataset.originalContent;
+        }
         btn.disabled = false;
+        btn.classList.remove('opacity-70', 'cursor-not-allowed');
     }
 }

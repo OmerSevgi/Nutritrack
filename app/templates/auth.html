@@ -98,8 +98,20 @@
             });
             const result = await res.json();
             if (res.ok) {
-                showMessage('Kayıt başarılı! Şimdi giriş yapabilirsiniz.', 'text-emerald-400');
-                loginTab.click();
+                // Kayıt başarılı, otomatik giriş yap
+                const loginRes = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: data.email, password: data.password })
+                });
+                const loginResult = await loginRes.json();
+                if (loginRes.ok) {
+                    localStorage.setItem('token', loginResult.auth_token);
+                    window.location.href = '/dashboard';
+                } else {
+                    showMessage('Kayıt başarılı ancak giriş yapılamadı. Lütfen manuel giriş yapın.', 'text-amber-400');
+                    loginTab.click();
+                }
             } else showMessage(result.message, 'text-red-400');
         } catch (err) { showMessage('Bağlantı hatası!', 'text-red-400'); }
     };

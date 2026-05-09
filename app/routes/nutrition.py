@@ -5,6 +5,7 @@ from app.utils.auth_utils import token_required
 from app.services.nutrition_service import NutritionService
 from app.services.ai_service import AIService
 from datetime import datetime
+import re
 
 nutrition_bp = Blueprint('nutrition', __name__)
 
@@ -56,7 +57,6 @@ def log_ai_meal(current_user):
         return jsonify({'error': 'No text provided'}), 400
         
     ai_service = AIService()
-    # 1. AI ile besin listesini ayıkla
     food_names_raw = ai_service.ask_coach(f"Extract only food names as comma-separated list in English from this text: '{text}'. If none found, return empty.")
     food_list = [f.strip() for f in food_names_raw.split(',') if f.strip()]
     
@@ -75,39 +75,34 @@ def log_ai_meal(current_user):
     
     try:
         logged_items = []
-        for item in food_items_data:
-            name = item.get('ad')
-            qty_str = str(item.get('miktar', '1'))
+        for food_name in food_list:
+            data = ninjas_client.get_nutrition(food_name)
+            item = data[0] if data and len(data) > 0 else None
+            if not item: continue
             
-            # Miktar ayrıştırma: "3 adet", "100g" -> 3.0 veya 100.0
-            import re
-            nums = re.findall(r"[-+]?\d*\.\d+|\d+", qty_str)
-            qty = float(nums[0]) if nums else 1.0
+            print(f"DEBUG: Processing item from API: {item}")
             
-            total_cal = float(item.get('kalori', 0))
-            total_pro = float(item.get('protein', 0))
-            total_carb = float(item.get('karbonhidrat', 0))
-            total_fat = float(item.get('yag', 0))
+            name = item.get('name')
+            qty = 1.0 
             
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
             if not food:
                 food = FoodItem(
                     name=name,
-                    calories=total_cal / qty if qty > 0 else total_cal,
-                    protein=total_pro / qty if qty > 0 else total_pro,
-                    carbs=total_carb / qty if qty > 0 else total_carb,
-                    fats=total_fat / qty if qty > 0 else total_fat
+                    calories=float(item.get('calories', 0)),
+                    protein=float(item.get('protein_g', 0)),
+                    carbs=float(item.get('carbohydrates_total_g', 0)),
+                    fats=float(item.get('fat_total_g', 0))
                 )
                 db.session.add(food)
             else:
-                food.calories = total_cal / qty if qty > 0 else total_cal
-                food.protein = total_pro / qty if qty > 0 else total_pro
-                food.carbs = total_carb / qty if qty > 0 else total_carb
-                food.fats = total_fat / qty if qty > 0 else total_fat
+                food.calories = float(item.get('calories', 0))
+                food.protein = float(item.get('protein_g', 0))
+                food.carbs = float(item.get('carbohydrates_total_g', 0))
+                food.fats = float(item.get('fat_total_g', 0))
                 db.session.add(food)
             
             db.session.flush()
-            
             entry = LogEntry(
                 daily_log_id=log.id,
                 food_item_id=food.id,
@@ -120,6 +115,9 @@ def log_ai_meal(current_user):
         
         db.session.commit()
     except Exception as e:
+        import traceback
+        print(f"DEBUG: Critical Error in log_ai_meal: {str(e)}")
+        print(traceback.format_exc())
         db.session.rollback()
         return jsonify({'error': f'Failed to save entries: {str(e)}'}), 500
     

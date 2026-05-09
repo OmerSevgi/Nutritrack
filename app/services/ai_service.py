@@ -56,46 +56,40 @@ class AIService:
         Parses free text food input into a structured JSON list of food items.
         """
         try:
-            # New strict prompt provided by user
+            # Updated professional prompt
             system_prompt = """
-            Sen NutriTrack uygulamasının profesyonel besin analiz motorusun. Görevin kullanıcı girdilerini bilimsel verilere dayalı kalori ve makro değerlerine dönüştürmektir. Şu kurallara SIKI SIKIYA uymalısın:
+            Sen bir beslenme uzmanı ve veri mühendisisin. Görevin kullanıcı girdilerini analiz etmek ve kalori ile makro değerlerini (protein, karbonhidrat, yağ) hesaplamaktır.
 
-            BİRİM AYRIMI: Kullanıcı "adet", "tane" veya "dilim" dediğinde bunu asla 100 gramlık porsiyonlarla karıştırma. Eğer kullanıcı gıda miktarını 'adet' veya 'tane' olarak belirtmişse, toplam kaloriyi (adet sayısı * birim kalori) formülüyle hesapla. Örneğin: 1 adet zeytin asla 59 kcal olamaz, 5-6 kcal olmalıdır. 10 adet zeytin için 590 kcal döndürmek yerine 60 kcal döndür.
-            Örnek: 1 adet zeytin ~6 kcal'dir (590 değil!).
-            Örnek: 1/4 somun ekmek ~160 kcal'dir.
-            Örnek: 1 adet yumurta ~78 kcal ve 6g proteindir.
+            Kurallar:
+            1. Kalori hesaplamalarını yaparken güvenilir besin veritabanı ortalamalarını kullan (Örn: 1 yumurta ~75 kcal, 100g pirinç kreması ~360 kcal).
+            2. Miktarları 'adet', 'tane', 'dilim' veya 'gram' olarak doğru tanımla.
+            3. Analiz sonucunu sadece aşağıdaki JSON formatında döndür, ekstra açıklama yapma:
 
-            GENEL BESİN MANTIĞI (Et, Sebze, Meyve):
-            * Kullanıcı miktar belirtmezse (örn: "et yedim"), bunu standart 1 porsiyon (pişmiş ~100-120g) olarak kabul et ve yaklaşık 200-250 kcal / 25-30g protein bandında hesapla.
-            * "1 avuç", "1 tabak" gibi ifadeleri standart ev ölçülerine göre normalize et.
-
-            MANTIKSAL KONTROL: Hesapladığın toplam kalori miktarı, biyolojik gerçekliğe uygun olmalı. 10 adet zeytin veya 4 yumurta gibi tekil malzemelerin 500 kcal'yi aşması durumunda işlemi durdur ve birim değerlerini tekrar kontrol et.
-
-            HATA ENGELLEME: Sayısal verilerde asla uydurma yapma. Emin olmadığın besinlerde en güvenilir ortalama değerleri kullan.
-
-            ÇIKTI FORMATI:
-            Analiz sonuçlarını mutlaka şu JSON formatında bir liste olarak döndür. Başka hiçbir açıklama ekleme.
-            [
+            {
+              "ogun_ozeti": {
+                "toplam_kalori": 0,
+                "toplam_protein": 0,
+                "toplam_karbonhidrat": 0,
+                "toplam_yag": 0
+              },
+              "besinler": [
                 {
-                    "name": "besin adı",
-                    "quantity": 4, 
-                    "unit_type": "adet", 
-                    "unit_calories": 78,
-                    "unit_protein": 6,
-                    "total_calories": 312,
-                    "total_protein": 24,
-                    "total_carbs": 2,
-                    "total_fats": 20
+                  "ad": "Besin Adı",
+                  "miktar": "100g",
+                  "kalori": 0,
+                  "protein": 0,
+                  "karbonhidrat": 0,
+                  "yag": 0
                 }
-            ]
-            'unit_calories' 1 adet/100g değeridir. 'total_calories' ise toplam porsiyon değeridir.
+              ]
+            }
             """
             
             completion = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Metin: {text}. Sadece JSON döndür."}
+                    {"role": "user", "content": f"Öğün Metni: {text}"}
                 ],
                 temperature=0.1,
                 response_format={"type": "json_object"}
@@ -104,14 +98,10 @@ class AIService:
             raw_text = completion.choices[0].message.content.strip()
             data = json.loads(raw_text)
             
-            # Extract list if wrapped in a key
-            if isinstance(data, dict):
-                for key in data:
-                    if isinstance(data[key], list):
-                        return data[key]
-                if "name" in data:
-                    return [data]
-            return data if isinstance(data, list) else []
+            # API'den dönen yapıyı projenin beklediği formata (list of items) çeviriyoruz
+            if "besinler" in data:
+                return data["besinler"]
+            return []
         except Exception as e:
             print(f"Error parsing food input: {str(e)}")
             return []

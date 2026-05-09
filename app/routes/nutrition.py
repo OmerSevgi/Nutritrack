@@ -54,13 +54,16 @@ def log_ai_meal(current_user):
     
     if not text:
         return jsonify({'error': 'No text provided'}), 400
-        
-    from app.integrations.ninjas_client import CalorieNinjasClient
-    ninjas_client = CalorieNinjasClient()
-    food_items_data = ninjas_client.get_nutrition(text)
-    
-    if not food_items_data:
-        return jsonify({'error': 'Could not find nutrition data'}), 400
+        # CalorieNinjas API çağrısı
+        from app.integrations.ninjas_client import CalorieNinjasClient
+        ninjas_client = CalorieNinjasClient()
+
+        print(f"DEBUG: Calling CalorieNinjas for query: {text}")
+        food_items_data = ninjas_client.get_nutrition(text)
+        print(f"DEBUG: CalorieNinjas response: {food_items_data}")
+
+        if not food_items_data:
+            return jsonify({'error': 'Could not find nutrition data'}), 400
         
     # Get or create today's log
     today = datetime.utcnow().date()

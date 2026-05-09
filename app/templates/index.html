@@ -115,6 +115,24 @@
 
                 <!-- Content Sections -->
                 <div id="nutritionSection" class="space-y-8">
+                    <!-- Manuel Besin Girişi -->
+                    <div class="glass p-8 rounded-[2rem] border-blue-500/10 shadow-2xl relative mt-8">
+                        <h3 class="text-xl font-black text-white mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-plus text-blue-400"></i> Manuel Besin Ekle
+                        </h3>
+                        <form id="manualLogForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="foodName" required 
+                                class="bg-slate-950/50 border-2 border-slate-800 rounded-2xl p-4 text-white placeholder-slate-600" 
+                                placeholder="Besin Adı (örn: Elma)">
+                            <input type="number" id="foodQty" step="0.1" required 
+                                class="bg-slate-950/50 border-2 border-slate-800 rounded-2xl p-4 text-white placeholder-slate-600" 
+                                placeholder="Miktar (g)">
+                            <button type="submit" class="md:col-span-2 bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-2xl font-black transition-all">
+                                EKLE
+                            </button>
+                        </form>
+                    </div>
+
                     <!-- AI Input -->
                     <div class="glass p-8 rounded-[2rem] border-emerald-500/20 shadow-2xl relative">
                         <h3 class="text-xl font-black text-white mb-6 flex items-center gap-3">
@@ -500,6 +518,31 @@
     }
 
     // FORMS
+    document.getElementById('manualLogForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('foodName').value;
+        const qty = document.getElementById('foodQty').value;
+        
+        // Not: Basitlik adına, besin id'si otomatik bulunmalı veya yeni yaratılmalı. 
+        // Burada yeni bir besin yaratıp sonra logluyoruz.
+        const res = await secureFetch('/api/nutrition/food', {
+            method: 'POST',
+            body: JSON.stringify({ name: name, calories: 0, protein: 0, carbs: 0, fats: 0 }) // Şimdilik 0 varsayılan
+        });
+        
+        if (res && res.ok) {
+            const foodData = await res.json();
+            await secureFetch('/api/nutrition/log', {
+                method: 'POST',
+                body: JSON.stringify({ food_item_id: foodData.id, quantity: qty, meal_type: 'manual' })
+            });
+            document.getElementById('foodName').value = '';
+            document.getElementById('foodQty').value = '';
+            fetchSummary();
+            fetchWeeklyHistory();
+        }
+    };
+
     document.getElementById('aiLogForm').onsubmit = async (e) => {
         e.preventDefault();
         const text = document.getElementById('aiInput').value;

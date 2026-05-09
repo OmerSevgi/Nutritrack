@@ -10,12 +10,16 @@ class NutritionAIService(AIBaseService):
     def parse_food_input(self, text):
         system_prompt = """
         Sen uzman bir diyetisyen ve veri mühendisisin. Görevin, kullanıcıdan gelen besin girdilerini analiz etmektir.
-        Sadece JSON döndür: {"besinler": [{"ad": "Besin Adı", "miktar": "150g", "kalori": 165, "protein": 31, "karbonhidrat": 0, "yag": 3.6}]}
+        GÖREVİN: Sadece geçerli bir JSON objesi döndür.
+        JSON FORMATI: {"besinler": [{"ad": "Besin Adı", "miktar": "150g", "kalori": 165, "protein": 31, "karbonhidrat": 0, "yag": 3.6}]}
+        Metin: 
         """
-        raw_json = self._call_gemini(f"{system_prompt}\nMetin: {text}")
+        # Gemini yerine Groq JSON modunu kullanıyoruz
+        raw_json = self._call_groq(f"{system_prompt}\n{text}", json_mode=True)
         try:
             return json.loads(raw_json).get("besinler", [])
-        except:
+        except Exception as e:
+            print(f"Groq parsing error: {e}")
             return []
 
     def generate_fridge_recipe(self, user_goal, ingredients):

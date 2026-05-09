@@ -54,11 +54,14 @@
 <body class="min-h-screen">
     <!-- Splash Screen -->
     <div id="splash" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#020617]">
-        <div class="flex flex-col items-center animate-pulse">
-            <div class="h-20 w-20 bg-emerald-500 rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/50">
-                <i class="fa-solid fa-leaf text-white text-4xl"></i>
+        <div class="relative flex flex-col items-center">
+            <!-- Dönen dış halka -->
+            <div class="absolute h-24 w-24 border-t-4 border-emerald-500 rounded-full animate-spin"></div>
+            <!-- Logo -->
+            <div class="h-20 w-20 bg-emerald-900/50 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/20 animate-bounce">
+                <i class="fa-solid fa-leaf text-emerald-400 text-4xl"></i>
             </div>
-            <h1 class="text-3xl font-black text-white tracking-tighter">NutriTrack AI</h1>
+            <h1 class="mt-8 text-2xl font-black text-white tracking-widest uppercase animate-pulse">NutriTrack AI</h1>
         </div>
     </div>
 

@@ -58,6 +58,8 @@ def log_ai_meal(current_user):
     ai_service = AIService()
     food_items_data = ai_service.parse_food_input(text)
     
+    print(f"DEBUG: Parsed food items: {food_items_data}") # Debug logu
+    
     if not food_items_data:
         return jsonify({'error': 'Could not parse any food items'}), 400
         

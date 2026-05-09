@@ -42,6 +42,7 @@ class NutritionLoggerService:
         logged_items = []
         for item in food_list:
             name = item.get('ad') or item.get('name')
+            english_name = item.get('en') or name
             
             # AI'dan gelen gramaj tahminini al
             raw_qty = str(item.get('miktar') or item.get('quantity') or '100')
@@ -49,8 +50,8 @@ class NutritionLoggerService:
             qty_grams = float(match.group(1)) if match else 100.0
             
             # Pirinç/Pilav kontrolü (Çiğ değer için)
-            search_name = name.lower()
-            if any(x in search_name for x in ['pirinç', 'pilav', 'rice', 'cream rice']):
+            search_name = english_name.lower()
+            if any(x in name.lower() or x in search_name for x in ['pirinç', 'pilav', 'rice', 'cream rice']):
                 search_name = "raw rice"
 
             food = FoodItem.query.filter(FoodItem.name.ilike(search_name)).first()

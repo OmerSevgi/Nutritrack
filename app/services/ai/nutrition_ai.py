@@ -13,7 +13,7 @@ class NutritionAIService(AIBaseService):
         GÖREVİN: Kullanıcı metnindeki besinleri analiz et ve her birinin toplam ağırlığını GRAM (g) cinsinden bilimsel ve sektörel standartlara göre tahmin et.
         
         Sadece şu JSON formatında dön:
-        {"besinler": [{"ad": "Besin Adı", "miktar": "sayısal_gram_değeri", "birim": "g"}]}
+        {"besinler": [{"ad": "Besin Adı", "en": "English Name", "miktar": "sayısal_gram_değeri", "birim": "g"}]}
         Metin: 
         """
         # Gemini yerine Groq JSON modunu kullanıyoruz

@@ -49,7 +49,6 @@ class NutritionSummaryService:
                     'id': entry.id,
                     'name': f.name, 
                     'quantity': entry.quantity, 
-                    'unit': 'g' if (entry.quantity >= 20 or any(x in f.name.lower() for x in ['gram', 'kakao', 'toz', 'tuz', 'yağ', 'sos'])) else 'ad',
                     'calories': round(cal, 1),
                     'protein': round(pro, 1),
                     'carbs': round(carb, 1),

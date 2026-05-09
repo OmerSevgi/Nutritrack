@@ -52,39 +52,54 @@
     </style>
 </head>
 <body class="min-h-screen">
+    <!-- Splash Screen -->
+    <div id="splash" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#020617]">
+        <div class="flex flex-col items-center animate-pulse">
+            <div class="h-20 w-20 bg-emerald-500 rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/50">
+                <i class="fa-solid fa-leaf text-white text-4xl"></i>
+            </div>
+            <h1 class="text-3xl font-black text-white tracking-tighter">NutriTrack AI</h1>
+        </div>
+    </div>
+
     <nav class="glass sticky top-0 z-50 p-4 border-b border-white/5">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex justify-between items-center px-2 md:px-4">
             <a href="/" class="flex items-center gap-3 group">
                 <div class="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-solid fa-leaf text-white text-xl"></i>
                 </div>
-                <h1 class="text-2xl font-black tracking-tighter text-white">NutriTrack <span class="text-emerald-400">AI</span></h1>
+                <h1 class="text-xl md:text-2xl font-black tracking-tighter text-white hidden md:block">NutriTrack <span class="text-emerald-400">AI</span></h1>
             </a>
             
-            <div class="flex items-center gap-8">
-                <div id="guestLinks" class="space-x-4">
-                    <a href="/auth" class="text-sm font-bold text-slate-400 hover:text-white transition">Giriş Yap</a>
-                    <a href="/auth" class="bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-xl text-white font-black text-xs uppercase tracking-widest transition shadow-lg shadow-emerald-500/20">Kayıt Ol</a>
+            <div class="flex items-center gap-4 md:gap-8">
+                <div id="guestLinks" class="space-x-2 md:space-x-4">
+                    <a href="/auth" class="text-[11px] md:text-sm font-bold text-slate-400 hover:text-white transition">Giriş</a>
+                    <a href="/auth" class="bg-emerald-600 hover:bg-emerald-700 px-4 md:px-6 py-2 rounded-xl text-white font-black text-[10px] md:text-xs uppercase tracking-widest transition shadow-lg shadow-emerald-500/20">Kayıt Ol</a>
                 </div>
-                <div id="userLinks" class="hidden flex items-center gap-8">
-                    <a href="/dashboard" class="text-sm font-bold hover:text-emerald-400 transition flex items-center gap-2">
-                        <i class="fa-solid fa-house-chimney text-[10px] opacity-50"></i> Dashboard
+                <div id="userLinks" class="hidden flex items-center gap-3 md:gap-8">
+                    <a href="/dashboard" class="text-xs md:text-sm font-bold hover:text-emerald-400 transition flex items-center gap-2">
+                        <i class="fa-solid fa-house-chimney text-[10px] opacity-50"></i> <span class="hidden md:inline">Dashboard</span>
                     </a>
-                    <a href="/settings" class="text-sm font-bold text-slate-400 hover:text-emerald-400 transition flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-[10px] opacity-50"></i> Ayarlar
+                    <a href="/settings" class="text-xs md:text-sm font-bold text-slate-400 hover:text-emerald-400 transition flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-[10px] opacity-50"></i> <span class="hidden md:inline">Ayarlar</span>
                     </a>
-                    <button onclick="logout()" class="px-5 py-2 rounded-xl bg-red-500/10 text-red-400 text-[10px] font-black border border-red-500/20 hover:bg-red-500 hover:text-white transition-all duration-300 uppercase tracking-widest">
+                    <button onclick="logout()" class="px-3 md:px-5 py-2 rounded-xl bg-red-500/10 text-red-400 text-[10px] font-black border border-red-500/20 hover:bg-red-500 hover:text-white transition-all duration-300 uppercase tracking-widest">
                         Çıkış
                     </button>
-                    <div class="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                        <i class="fa-solid fa-user text-emerald-400"></i>
-                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
     <script>
+        // Splash Screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash').classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => document.getElementById('splash').remove(), 500);
+            }, 800);
+        });
+
         const navToken = localStorage.getItem('token');
         if (navToken) {
             document.getElementById('guestLinks').classList.add('hidden');
@@ -97,7 +112,7 @@
         }
     </script>
 
-    <main class="container mx-auto p-6">
+    <main class="container mx-auto px-4 py-6">
         {% block content %}{% endblock %}
     </main>
 

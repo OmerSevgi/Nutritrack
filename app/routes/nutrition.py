@@ -92,7 +92,7 @@ def log_ai_meal(current_user):
 
             # Try to find existing food item by name (case-insensitive)
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
-            
+
             # AI'dan gelen toplam değerleri 100g bazına indirgeyerek kaydet (Basitleştirilmiş yaklaşım)
             unit_cal = total_cal / qty if qty > 0 else total_cal
             unit_pro = total_pro / qty if qty > 0 else total_pro
@@ -100,6 +100,7 @@ def log_ai_meal(current_user):
             unit_fat = total_fat / qty if qty > 0 else total_fat
 
             if not food:
+                # Create new food item
                 food = FoodItem(
                     name=name,
                     calories=unit_cal,
@@ -109,14 +110,14 @@ def log_ai_meal(current_user):
                 )
                 db.session.add(food)
             else:
+                # Update existing food item with AI's latest, most accurate values
                 food.calories = unit_cal
                 food.protein = unit_pro
                 food.carbs = unit_carb
                 food.fats = unit_fat
-            
-            db.session.flush()
-            
-            entry = LogEntry(
+                db.session.add(food) # Ensure updated food is tracked
+
+            db.session.flush() # Commit'ten önce ID'leri al
                 daily_log_id=log.id,
                 food_item_id=food.id,
                 quantity=qty,

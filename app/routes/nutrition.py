@@ -118,6 +118,8 @@ def log_ai_meal(current_user):
                 db.session.add(food) # Ensure updated food is tracked
 
             db.session.flush() # Commit'ten önce ID'leri al
+            
+            entry = LogEntry(
                 daily_log_id=log.id,
                 food_item_id=food.id,
                 quantity=qty,

@@ -25,21 +25,35 @@ class NutritionSummaryService:
                 
                 cal = (f.calories or 0) * q_ratio
                 pro = (f.protein or 0) * q_ratio
+                carb = (f.carbs or 0) * q_ratio
+                fat = (f.fats or 0) * q_ratio
                 
                 summary['calories'] += cal
                 summary['protein'] += pro
-                summary['carbs'] += (f.carbs or 0) * q_ratio
-                summary['fats'] += (f.fats or 0) * q_ratio
+                summary['carbs'] += carb
+                summary['fats'] += fat
                 
                 group_key = entry.prompt_text if entry.prompt_text else f"manual_{entry.id}"
                 if group_key not in meal_groups:
                     meal_groups[group_key] = {
                         'id': entry.id, 'title': entry.prompt_text if entry.prompt_text else f.name,
-                        'total_calories': 0, 'total_protein': 0, 'items': []
+                        'is_ai': entry.prompt_text is not None,
+                        'total_calories': 0, 'total_protein': 0, 'total_carbs': 0, 'total_fats': 0, 
+                        'items': []
                     }
                 meal_groups[group_key]['total_calories'] += round(cal, 1)
                 meal_groups[group_key]['total_protein'] += round(pro, 1)
-                meal_groups[group_key]['items'].append({'name': f.name, 'quantity': entry.quantity, 'total_calories': round(cal, 1)})
+                meal_groups[group_key]['total_carbs'] += round(carb, 1)
+                meal_groups[group_key]['total_fats'] += round(fat, 1)
+                meal_groups[group_key]['items'].append({
+                    'id': entry.id,
+                    'name': f.name, 
+                    'quantity': entry.quantity, 
+                    'calories': round(cal, 1),
+                    'protein': round(pro, 1),
+                    'carbs': round(carb, 1),
+                    'fats': round(fat, 1)
+                })
             
             summary['meals'] = list(meal_groups.values())
 

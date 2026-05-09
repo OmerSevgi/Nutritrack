@@ -53,7 +53,12 @@ function updateNutritionUI(data) {
                                 <div class="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400">
                                     <i class="fa-solid ${meal.is_ai ? 'fa-wand-magic-sparkles' : 'fa-utensils'} text-xs"></i>
                                 </div>
-                                <p class="font-bold text-sm text-white">${meal.title}</p>
+                                <div>
+                                    <p class="font-bold text-sm text-white">${meal.title}</p>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                        P: ${meal.total_protein}g | K: ${meal.total_carbs}g | Y: ${meal.total_fats}g
+                                    </p>
+                                </div>
                             </div>
                             <div class="flex items-center gap-6">
                                 <div class="text-right">
@@ -63,11 +68,22 @@ function updateNutritionUI(data) {
                             </div>
                         </div>
                         <div id="meal-details-${idx}" class="hidden p-6 bg-slate-950/20 border-t border-white/5 space-y-3">
-                            ${meal.items.map(it => `<div class="flex justify-between text-xs text-slate-400"><span>${it.name} (${it.quantity})</span><span>${it.total_calories} kcal</span></div>`).join('')}
+                            ${meal.items.map(it => `
+                                <div class="flex justify-between items-center text-[11px]">
+                                    <span class="text-slate-300 font-medium">${it.name} (${it.quantity}${it.quantity < 20 ? ' ad' : 'g'})</span>
+                                    <div class="flex gap-4 text-slate-500 font-bold">
+                                        <span>${it.calories} kcal</span>
+                                        <span class="text-blue-400/80">P: ${it.protein}</span>
+                                        <span class="text-amber-400/80">K: ${it.carbs}</span>
+                                        <span class="text-rose-400/80">Y: ${it.fats}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
                         </div>
                     `;
                     list.appendChild(div);
                 });
+
             }
         }
     } catch (err) {

@@ -48,10 +48,10 @@ class NutritionLoggerService:
             match = re.search(r"(\d+\.?\d*)", raw_qty)
             qty = float(match.group(1)) if match else 1.0
             
-            # Pirinç türevlerini standartlaştır
+            # Pirinç ve Pilav türevlerini ÇİĞ (raw) olarak standartlaştır
             search_name = name.lower()
-            rice_variants = ['pirinç', 'toz pirinç', 'cream rice', 'rice cream', 'pirinc']
-            if any(variant in search_name for variant in rice_variants):
+            rice_variants = ['pirinç', 'toz pirinç', 'cream rice', 'rice cream', 'pirinc', 'pilav', 'pilaf', 'rice']
+            if any(variant == search_name or variant in search_name for variant in rice_variants):
                 search_name = "raw rice"
             else:
                 search_name = name

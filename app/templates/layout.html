@@ -119,7 +119,11 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Global JS can go here -->
+    <!-- Global JS -->
+    <script src="{{ url_for('static', filename='js/modules/core.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modules/nutrition.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modules/fitness.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modules/ui.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

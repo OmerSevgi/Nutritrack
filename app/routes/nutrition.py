@@ -5,7 +5,7 @@ from app.utils.auth_utils import token_required
 from app.services.nutrition_service import NutritionService
 from app.services.ai_service import AIService
 from datetime import datetime
-import re
+import json
 
 nutrition_bp = Blueprint('nutrition', __name__)
 
@@ -57,11 +57,25 @@ def log_ai_meal(current_user):
         return jsonify({'error': 'No text provided'}), 400
         
     ai_service = AIService()
-    food_names_raw = ai_service.ask_coach(f"Extract only food names as comma-separated list in English from this text: '{text}'. If none found, return empty.")
-    food_list = [f.strip() for f in food_names_raw.split(',') if f.strip()]
+    # 1. AI ile besin listesini ayıkla (name ve quantity)
+    analysis_prompt = f"""
+    Sen bir veri mühendisisin. Verilen metindeki besinleri listele ve miktarını belirle.
+    Sadece şu JSON formatında dön:
+    {{
+        "besinler": [ {{"name": "egg", "quantity": 3}}, {{"name": "rice", "quantity": 100}} ]
+    }}
+    Metin: '{text}'
+    """
+    ai_response = ai_service.ask_coach(analysis_prompt)
+    try:
+        raw_text = ai_response.strip().replace("```json", "").replace("```", "")
+        parsed_data = json.loads(raw_text)
+        food_list = parsed_data.get("besinler", [])
+    except:
+        return jsonify({'error': 'AI parsing failed'}), 400
     
     if not food_list:
-        return jsonify({'error': 'Could not parse food items'}), 400
+        return jsonify({'error': 'No food found'}), 400
         
     from app.integrations.ninjas_client import CalorieNinjasClient
     ninjas_client = CalorieNinjasClient()
@@ -75,31 +89,24 @@ def log_ai_meal(current_user):
     
     try:
         logged_items = []
-        for food_name in food_list:
-            data = ninjas_client.get_nutrition(food_name)
-            item = data[0] if data and len(data) > 0 else None
-            if not item: continue
-            
-            print(f"DEBUG: Processing item from API: {item}")
-            
+        for item in food_list:
             name = item.get('name')
-            qty = 1.0 
+            qty = float(item.get('quantity', 1.0))
+            
+            # API'den gerçek veriyi çek
+            data = ninjas_client.get_nutrition(name)
+            nutrition = data[0] if data and len(data) > 0 else None
+            if not nutrition: continue
             
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
             if not food:
                 food = FoodItem(
                     name=name,
-                    calories=float(item.get('calories', 0)),
-                    protein=float(item.get('protein_g', 0)),
-                    carbs=float(item.get('carbohydrates_total_g', 0)),
-                    fats=float(item.get('fat_total_g', 0))
+                    calories=float(nutrition.get('calories', 0)),
+                    protein=float(nutrition.get('protein_g', 0)),
+                    carbs=float(nutrition.get('carbohydrates_total_g', 0)),
+                    fats=float(nutrition.get('fat_total_g', 0))
                 )
-                db.session.add(food)
-            else:
-                food.calories = float(item.get('calories', 0))
-                food.protein = float(item.get('protein_g', 0))
-                food.carbs = float(item.get('carbohydrates_total_g', 0))
-                food.fats = float(item.get('fat_total_g', 0))
                 db.session.add(food)
             
             db.session.flush()
@@ -111,20 +118,14 @@ def log_ai_meal(current_user):
                 prompt_text=text
             )
             db.session.add(entry)
-            logged_items.append(item)
+            logged_items.append({"name": name, "quantity": qty})
         
         db.session.commit()
     except Exception as e:
-        import traceback
-        print(f"DEBUG: Critical Error in log_ai_meal: {str(e)}")
-        print(traceback.format_exc())
         db.session.rollback()
-        return jsonify({'error': f'Failed to save entries: {str(e)}'}), 500
+        return jsonify({'error': f'Failed: {str(e)}'}), 500
     
-    return jsonify({
-        'message': f'{len(logged_items)} items logged',
-        'items': logged_items
-    }), 201
+    return jsonify({'message': 'Logged successfully', 'items': logged_items}), 201
 
 @nutrition_bp.route('/summary', methods=['GET'])
 @token_required

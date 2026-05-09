@@ -271,8 +271,7 @@
         
         const res = await fetch(url, options);
         if (res.status === 401) {
-            localStorage.removeItem('token');
-            window.location.href = '/auth';
+            console.error("401 Unauthorized: API isteği yetkilendirilemedi.");
             return null;
         }
         return res;

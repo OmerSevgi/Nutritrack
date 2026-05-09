@@ -21,11 +21,13 @@ def create_app(config_class=Config):
     from app.routes.nutrition import nutrition_bp
     from app.routes.ai import ai_bp
     from app.routes.fitness import fitness_bp
+    from app.routes.admin import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(nutrition_bp, url_prefix='/api/nutrition')
     app.register_blueprint(ai_bp, url_prefix='/api/ai')
     app.register_blueprint(fitness_bp, url_prefix='/api/fitness')
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
     from flask import render_template
 

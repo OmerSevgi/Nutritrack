@@ -9,3 +9,5 @@ flask-cors
 groq
 psycopg2-binary
 gunicorn
+grpcio
+protobuf<5.0.0

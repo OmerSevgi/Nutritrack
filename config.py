@@ -16,6 +16,13 @@ class Config:
     
     SQLALCHEMY_DATABASE_URI = db_url or 'sqlite:///app.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Bağlantı havuzu optimizasyonu
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_size": 10,
+        "max_overflow": 20
+    }
     GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')

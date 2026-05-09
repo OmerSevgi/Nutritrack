@@ -21,3 +21,4 @@ class Config:
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
     API_NINJAS_KEY = os.environ.get('API_NINJAS_KEY')
     SPOONACULAR_API_KEY = os.environ.get('SPOONACULAR_API_KEY')
+    CALORIE_NINJAS_KEY = os.environ.get('CALORIE_NINJAS_KEY')

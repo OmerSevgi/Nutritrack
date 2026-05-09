@@ -61,15 +61,12 @@ class AIService:
             """
             prompt = f"{system_prompt}\nÖğün Metni: {text}"
             
-            # Hız ve doğruluk optimizasyonu (Sadece bu metod için)
             generation_config = {
                 "temperature": 0.0,
                 "max_output_tokens": 400
             }
             
             response = self.model.generate_content(prompt, generation_config=generation_config)
-            
-            # Markdown temizliği
             raw_text = response.text.strip().replace("```json", "").replace("```", "")
             
             data = json.loads(raw_text)

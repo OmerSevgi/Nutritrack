@@ -70,7 +70,7 @@ function updateNutritionUI(data) {
                         <div id="meal-details-${idx}" class="hidden p-6 bg-slate-950/20 border-t border-white/5 space-y-3">
                             ${meal.items.map(it => `
                         <div class="flex justify-between items-center text-[11px]">
-                            <span class="text-slate-300 font-medium">${it.name} (${it.quantity}${it.quantity < 20 ? ' ad' : 'g'})</span>
+                            <span class="text-slate-300 font-medium">${it.name} (${it.quantity}g)</span>
                             <div class="flex gap-4 text-slate-500 font-bold">
 
                                         <span>${it.calories} kcal</span>

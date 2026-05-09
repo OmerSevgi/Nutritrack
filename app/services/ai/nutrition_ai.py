@@ -9,9 +9,14 @@ class NutritionAIService(AIBaseService):
 
     def parse_food_input(self, text):
         system_prompt = """
-        Sen uzman bir diyetisyen ve veri mühendisisin. Görevin, kullanıcıdan gelen besin girdilerini analiz etmektir.
-        GÖREVİN: Sadece geçerli bir JSON objesi döndür.
-        JSON FORMATI: {"besinler": [{"ad": "Besin Adı", "miktar": "150g", "kalori": 165, "protein": 31, "karbonhidrat": 0, "yag": 3.6}]}
+        Sen uzman bir diyetisyen ve veri mühendisisin.
+        GÖREVİN: Kullanıcı metnindeki besinleri analiz et ve her birinin toplam ağırlığını GRAM (g) cinsinden tahmin et.
+        Örn: "2 yumurta" -> miktar: "100", birim: "g"
+        Örn: "1 dilim ekmek" -> miktar: "25", birim: "g"
+        Örn: "100g pirinç" -> miktar: "100", birim: "g"
+        
+        Sadece şu JSON formatında dön:
+        {"besinler": [{"ad": "Besin Adı", "miktar": "sayısal_gram_değeri", "birim": "g"}]}
         Metin: 
         """
         # Gemini yerine Groq JSON modunu kullanıyoruz

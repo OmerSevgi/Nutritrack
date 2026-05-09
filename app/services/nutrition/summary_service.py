@@ -21,7 +21,8 @@ class NutritionSummaryService:
             meal_groups = {}
             for entry in log.entries:
                 f = entry.food_item
-                q_ratio = entry.quantity if entry.quantity < 20 else entry.quantity / 100.0
+                # ARTIK HER ŞEY GRAM BAZLI: 100g değerini miktar/100 ile çarpıyoruz.
+                q_ratio = entry.quantity / 100.0
                 
                 cal = (f.calories or 0) * q_ratio
                 pro = (f.protein or 0) * q_ratio

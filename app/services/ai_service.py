@@ -122,7 +122,12 @@ class AIService:
             Bugünkü antrenman: {workout_text}
             """
             response = self.model.generate_content(prompt)
-            return json.loads(response.text.strip().replace("```json", "").replace("```", ""))
+            raw_text = response.text.strip().replace("```json", "").replace("```", "")
+            
+            if not raw_text:
+                return None
+                
+            return json.loads(raw_text)
         except Exception as e:
             print(f"Error analyzing workout: {str(e)}")
             return None

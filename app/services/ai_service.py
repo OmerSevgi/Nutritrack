@@ -50,8 +50,12 @@ class AIService:
             }
             """
             prompt = f"{system_prompt}\nÖğün Metni: {text}"
-            response = self.model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-            data = json.loads(response.text)
+            response = self.model.generate_content(prompt)
+            
+            # Markdown temizliği
+            raw_text = response.text.strip().replace("```json", "").replace("```", "")
+            
+            data = json.loads(raw_text)
             return data.get("besinler", [])
         except Exception as e:
             print(f"Error parsing food input: {str(e)}")

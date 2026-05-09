@@ -67,51 +67,55 @@ def log_ai_meal(current_user):
     if not log:
         log = DailyLog(user_id=current_user.id, date=today)
         db.session.add(log)
-        db.session.commit()
+        db.session.flush() # ID'yi alabilmek için
     
-    logged_items = []
-    for item in food_items_data:
-        name = item.get('name')
-        qty = item.get('quantity', 1)
-        
-        # Try to find existing food item by name (case-insensitive)
-        food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
-        
-        unit_cal = item.get('unit_calories', 0)
-        unit_pro = item.get('unit_protein', 0)
-        unit_carb = item.get('total_carbs', 0) / qty if qty else 0
-        unit_fat = item.get('total_fats', 0) / qty if qty else 0
+    try:
+        logged_items = []
+        for item in food_items_data:
+            name = item.get('name')
+            qty = item.get('quantity', 1)
+            
+            # Try to find existing food item by name (case-insensitive)
+            food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
+            
+            unit_cal = item.get('unit_calories', 0)
+            unit_pro = item.get('unit_protein', 0)
+            unit_carb = item.get('total_carbs', 0) / qty if qty else 0
+            unit_fat = item.get('total_fats', 0) / qty if qty else 0
 
-        if not food:
-            # Create new food item
-            food = FoodItem(
-                name=name,
-                calories=unit_cal,
-                protein=unit_pro,
-                carbs=unit_carb,
-                fats=unit_fat
+            if not food:
+                # Create new food item
+                food = FoodItem(
+                    name=name,
+                    calories=unit_cal,
+                    protein=unit_pro,
+                    carbs=unit_carb,
+                    fats=unit_fat
+                )
+                db.session.add(food)
+            else:
+                # Update existing food item with AI's latest values
+                food.calories = unit_cal
+                food.protein = unit_pro
+                food.carbs = unit_carb
+                food.fats = unit_fat
+            
+            db.session.flush() # Commit'ten önce ID'leri al
+            
+            entry = LogEntry(
+                daily_log_id=log.id,
+                food_item_id=food.id,
+                quantity=qty,
+                meal_type='auto',
+                prompt_text=text
             )
-            db.session.add(food)
-        else:
-            # Update existing food item with AI's latest (and hopefully more accurate) values
-            food.calories = unit_cal
-            food.protein = unit_pro
-            food.carbs = unit_carb
-            food.fats = unit_fat
+            db.session.add(entry)
+            logged_items.append(item)
         
-        db.session.commit() # Commit to get/update the food.id
-        
-        entry = LogEntry(
-            daily_log_id=log.id,
-            food_item_id=food.id,
-            quantity=qty,
-            meal_type='auto',
-            prompt_text=text # Save the prompt text to group items
-        )
-        db.session.add(entry)
-        logged_items.append(item)
-    
-    db.session.commit()
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to save entries: {str(e)}'}), 500
     
     return jsonify({
         'message': f'{len(logged_items)} items logged',

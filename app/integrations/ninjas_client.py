@@ -17,9 +17,10 @@ class CalorieNinjasClient(APIClient):
         self.base_url = "https://api.api-ninjas.com/v1"
 
     def get_nutrition(self, query):
-        url = f"{self.base_url}/nutritionquery?query={query}"
+        url = f"{self.base_url}/nutrition"
+        params = {'query': query}
         try:
-            response = requests.get(url, headers=self._get_headers())
+            response = requests.get(url, headers=self._get_headers(), params=params)
             if response.status_code == 200:
                 return response.json()
             else:

@@ -74,26 +74,32 @@ def log_ai_meal(current_user):
     try:
         logged_items = []
         for item in food_items_data:
-            name = item.get('ad') # JSON prompt'unda 'ad' olarak tanımladık
+            name = item.get('ad')
             qty_str = item.get('miktar', '100g')
             
-            # Basit bir miktar ayrıştırma (AI'dan gelen '100g', '2 adet' gibi)
-            qty = 1
-            if 'adet' in qty_str:
-                qty = float(qty_str.split()[0])
-            elif 'g' in qty_str:
-                qty = float(qty_str.replace('g', '')) / 100
+            # AI artık 'toplam' değerleri döndürüyor (prompt'a göre)
+            total_cal = item.get('kalori', 0)
+            total_pro = item.get('protein', 0)
+            total_carb = item.get('karbonhidrat', 0)
+            total_fat = item.get('yag', 0)
             
+            # Basit bir miktar ayrıştırma (sadece miktar değerini almak için)
+            qty = 1.0
+            if isinstance(qty_str, str):
+                import re
+                nums = re.findall(r"[-+]?\d*\.\d+|\d+", qty_str)
+                if nums: qty = float(nums[0])
+
             # Try to find existing food item by name (case-insensitive)
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
             
-            unit_cal = item.get('kalori', 0)
-            unit_pro = item.get('protein', 0)
-            unit_carb = item.get('karbonhidrat', 0)
-            unit_fat = item.get('yag', 0)
+            # AI'dan gelen toplam değerleri 100g bazına indirgeyerek kaydet (Basitleştirilmiş yaklaşım)
+            unit_cal = total_cal / qty if qty > 0 else total_cal
+            unit_pro = total_pro / qty if qty > 0 else total_pro
+            unit_carb = total_carb / qty if qty > 0 else total_carb
+            unit_fat = total_fat / qty if qty > 0 else total_fat
 
             if not food:
-                # Create new food item
                 food = FoodItem(
                     name=name,
                     calories=unit_cal,
@@ -103,13 +109,12 @@ def log_ai_meal(current_user):
                 )
                 db.session.add(food)
             else:
-                # Update existing food item with AI's latest values
                 food.calories = unit_cal
                 food.protein = unit_pro
                 food.carbs = unit_carb
                 food.fats = unit_fat
             
-            db.session.flush() # Commit'ten önce ID'leri al
+            db.session.flush()
             
             entry = LogEntry(
                 daily_log_id=log.id,

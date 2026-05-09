@@ -54,20 +54,22 @@ class NutritionLoggerService:
                 search_name = "raw rice"
 
             food = FoodItem.query.filter(FoodItem.name.ilike(search_name)).first()
+            
+            # API'den her zaman 100g bazlı taze veriyi çek ve veritabanını GÜNCELLE
+            api_data = ninjas_client.get_nutrition(search_name)
+            nutrition = api_data[0] if api_data else {}
+            
             if not food:
-                # API'den her zaman 100g bazlı ham veriyi çek
-                api_data = ninjas_client.get_nutrition(search_name)
-                nutrition = api_data[0] if api_data else {}
-                
-                food = FoodItem(
-                    name=search_name,
-                    calories=float(nutrition.get('calories', 0)),
-                    protein=float(nutrition.get('protein_g', 0)),
-                    carbs=float(nutrition.get('carbohydrates_total_g', 0)),
-                    fats=float(nutrition.get('fat_total_g', 0))
-                )
-                db.session.add(food)
-                db.session.flush()
+                food = FoodItem(name=search_name)
+            
+            # API değerleriyle veritabanını zorla güncelle (Eski hatalı verileri temizle)
+            food.calories = float(nutrition.get('calories', 0))
+            food.protein = float(nutrition.get('protein_g', 0))
+            food.carbs = float(nutrition.get('carbohydrates_total_g', 0))
+            food.fats = float(nutrition.get('fat_total_g', 0))
+            
+            db.session.add(food)
+            db.session.flush()
             
             # Kaydı her zaman gram (qty_grams) olarak yap
             entry = LogEntry(daily_log_id=log.id, food_item_id=food.id, quantity=qty_grams, meal_type='auto', prompt_text=text)

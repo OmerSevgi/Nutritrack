@@ -38,10 +38,15 @@ class NutritionLoggerService:
             db.session.add(log)
             db.session.flush()
 
+        import re
         logged_items = []
         for item in food_list:
             name = item.get('ad') or item.get('name')
-            qty = float(item.get('miktar', '1').replace('g','')) if isinstance(item.get('miktar'), str) else float(item.get('quantity', 1))
+            
+            # Miktarı güvenli bir şekilde sayıya çevir (Regex ile sayısal kısmı ayıkla)
+            raw_qty = str(item.get('miktar') or item.get('quantity') or '1')
+            match = re.search(r"(\d+\.?\d*)", raw_qty)
+            qty = float(match.group(1)) if match else 1.0
             
             # Use AI results directly or fetch from API
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()

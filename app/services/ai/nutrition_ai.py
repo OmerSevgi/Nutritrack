@@ -10,15 +10,7 @@ class NutritionAIService(AIBaseService):
     def parse_food_input(self, text):
         system_prompt = """
         Sen uzman bir diyetisyen ve veri mühendisisin.
-        GÖREVİN: Kullanıcı metnindeki besinleri analiz et ve her birinin toplam ağırlığını GRAM (g) cinsinden EN DOĞRU şekilde tahmin et.
-        
-        REFERANS STANDARTLAR:
-        - 1 adet Yumurta = 50 gram
-        - 1 adet Zeytin = 5 gram
-        - 1 dilim Ekmek = 25 gram
-        - 1 adet Meyve (Elma/Muz) = 150 gram
-        - 1 porsiyon (tabak) Yemek = 250-300 gram
-        - 1 yemek kaşığı = 15 gram
+        GÖREVİN: Kullanıcı metnindeki besinleri analiz et ve her birinin toplam ağırlığını GRAM (g) cinsinden bilimsel ve sektörel standartlara göre tahmin et.
         
         Sadece şu JSON formatında dön:
         {"besinler": [{"ad": "Besin Adı", "miktar": "sayısal_gram_değeri", "birim": "g"}]}

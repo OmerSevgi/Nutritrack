@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block title %}Admin Paneli{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-black text-white mb-8">Admin Veri Yönetimi</h1>
+    
+    <div class="glass p-6 rounded-3xl border-white/10">
+        <table class="w-full text-left text-white text-sm">
+            <thead>
+                <tr class="border-b border-white/10 text-emerald-400 uppercase text-[10px] tracking-widest">
+                    <th class="p-3">ID</th>
+                    <th class="p-3">Besin Adı</th>
+                    <th class="p-3">Kalori</th>
+                    <th class="p-3">İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="foodTableBody">
+                <!-- Veriler buraya yüklenecek -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    async function loadFoods() {
+        const res = await secureFetch('/api/admin/foods');
+        if (!res) return;
+        const foods = await res.json();
+        const tbody = document.getElementById('foodTableBody');
+        tbody.innerHTML = '';
+        foods.forEach(f => {
+            tbody.innerHTML += `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="p-3">${f.id}</td>
+                    <td class="p-3 font-bold">${f.name}</td>
+                    <td class="p-3">${f.calories} kcal</td>
+                    <td class="p-3">
+                        <button onclick="deleteFood(${f.id})" class="text-red-400 hover:text-red-300">Sil</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    async function deleteFood(id) {
+        if(confirm('Emin misin?')) {
+            await secureFetch(`/api/admin/food/${id}`, { method: 'DELETE' });
+            loadFoods();
+        }
+    }
+
+    window.onload = loadFoods;
+</script>
+{% endblock %}

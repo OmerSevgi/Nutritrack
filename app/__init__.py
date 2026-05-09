@@ -46,6 +46,10 @@ def create_app(config_class=Config):
     @app.route('/settings')
     def settings():
         return render_template('settings.html')
+        
+    @app.route('/admin')
+    def admin():
+        return render_template('admin.html')
 
     @app.errorhandler(404)
     def not_found(error):

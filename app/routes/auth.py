@@ -102,14 +102,25 @@ def log_weight(current_user):
     if not weight:
         return jsonify({'error': 'Weight is required'}), 400
         
+    try:
+        weight_val = float(weight)
+    except ValueError:
+        return jsonify({'error': 'Weight must be a number'}), 400
+        
     from app.models.user_health import WeightLog
-    new_log = WeightLog(user_id=current_user.id, weight=weight)
+    new_log = WeightLog(user_id=current_user.id, weight=weight_val)
     db.session.add(new_log)
     
-    # Also update the profile weight
+    # Also update the profile weight safely
     if current_user.health_profile:
-        current_user.health_profile.weight = weight
-        HealthService.update_user_targets(current_user.health_profile)
+        current_user.health_profile.weight = weight_val
+        try:
+            HealthService.update_user_targets(current_user.health_profile)
+        except Exception as e:
+            print(f"DEBUG: HealthService error: {str(e)}")
+            # targets güncellenemese bile kilo günlüğünü kurtar
+            db.session.commit()
+            return jsonify({'message': 'Weight logged, but targets could not be updated'}), 201
         
     db.session.commit()
     return jsonify({'message': 'Weight logged successfully'}), 201

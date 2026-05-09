@@ -72,16 +72,23 @@ def log_ai_meal(current_user):
     try:
         logged_items = []
         for item in food_items_data:
-            name = item.get('name')
-            qty = item.get('quantity', 1)
+            name = item.get('ad') # JSON prompt'unda 'ad' olarak tanımladık
+            qty_str = item.get('miktar', '100g')
+            
+            # Basit bir miktar ayrıştırma (AI'dan gelen '100g', '2 adet' gibi)
+            qty = 1
+            if 'adet' in qty_str:
+                qty = float(qty_str.split()[0])
+            elif 'g' in qty_str:
+                qty = float(qty_str.replace('g', '')) / 100
             
             # Try to find existing food item by name (case-insensitive)
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
             
-            unit_cal = item.get('unit_calories', 0)
-            unit_pro = item.get('unit_protein', 0)
-            unit_carb = item.get('total_carbs', 0) / qty if qty else 0
-            unit_fat = item.get('total_fats', 0) / qty if qty else 0
+            unit_cal = item.get('kalori', 0)
+            unit_pro = item.get('protein', 0)
+            unit_carb = item.get('karbonhidrat', 0)
+            unit_fat = item.get('yag', 0)
 
             if not food:
                 # Create new food item

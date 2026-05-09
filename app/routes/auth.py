@@ -93,6 +93,13 @@ def update_profile(current_user):
     
     return jsonify({'message': 'Profile updated successfully'}), 200
 
+@auth_bp.route('/refresh', methods=['POST'])
+@token_required
+def refresh_token(current_user):
+    # Yeni bir token oluştur ve dön
+    auth_token = encode_auth_token(current_user.id)
+    return jsonify({'auth_token': auth_token}), 200
+
 @auth_bp.route('/weight', methods=['POST'])
 @token_required
 def log_weight(current_user):

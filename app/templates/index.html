@@ -260,7 +260,7 @@
     
     // Merkezi fetch fonksiyonu
     async function secureFetch(url, options = {}) {
-        const token = getToken();
+        let token = getToken();
         if (!token) { window.location.href = '/auth'; return null; }
         
         options.headers = {
@@ -269,10 +269,29 @@
             'Content-Type': 'application/json'
         };
         
-        const res = await fetch(url, options);
+        let res = await fetch(url, options);
+        
+        // Token süresi dolmuş veya geçersizse yenilemeyi dene
         if (res.status === 401) {
-            console.error("401 Unauthorized: API isteği yetkilendirilemedi.");
-            return null;
+            const refreshRes = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+            
+            if (refreshRes.ok) {
+                const data = await refreshRes.json();
+                localStorage.setItem('token', data.auth_token);
+                token = data.auth_token;
+                
+                // İsteği yeni token ile tekrarla
+                options.headers['Authorization'] = `Bearer ${token}`;
+                res = await fetch(url, options);
+            } else {
+                console.error("Oturum süresi doldu, giriş sayfasına yönlendiriliyor.");
+                localStorage.removeItem('token');
+                window.location.href = '/auth';
+                return null;
+            }
         }
         return res;
     }

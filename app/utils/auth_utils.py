@@ -13,7 +13,7 @@ def encode_auth_token(user_id):
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30),
             'iat': datetime.datetime.utcnow(),
-            'sub': user_id
+            'sub': str(user_id)
         }
         return jwt.encode(
             payload,

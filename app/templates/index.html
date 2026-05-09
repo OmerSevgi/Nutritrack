@@ -485,6 +485,29 @@
         fetchWeightHistory(); fetchSummary();
     };
 
+    document.getElementById('chatForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const text = input.value;
+        if (!text) return;
+        
+        // UI'a ekle
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'text-xs text-slate-300 bg-slate-800 p-3 rounded-xl';
+        msgDiv.innerText = text;
+        document.getElementById('chatMessages').appendChild(msgDiv);
+        input.value = '';
+
+        const res = await secureFetch('/api/ai/ask-coach', { method: 'POST', body: JSON.stringify({ query: text }) });
+        if (res && res.ok) {
+            const data = await res.json();
+            const replyDiv = document.createElement('div');
+            replyDiv.className = 'text-xs text-emerald-300 bg-emerald-500/10 p-3 rounded-xl';
+            replyDiv.innerText = data.response;
+            document.getElementById('chatMessages').appendChild(replyDiv);
+        }
+    };
+
     function toggleChat() { document.getElementById('aiChatWindow').classList.toggle('hidden'); }
     
     async function fetchWeeklyHistory() {

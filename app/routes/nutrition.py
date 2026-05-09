@@ -75,26 +75,39 @@ def log_ai_meal(current_user):
     
     try:
         logged_items = []
-        for food_name in food_list:
-            data = ninjas_client.get_nutrition(food_name)
-            item = data[0] if data and len(data) > 0 else None
-            if not item: continue
+        for item in food_items_data:
+            name = item.get('ad')
+            qty_str = str(item.get('miktar', '1'))
             
-            name = item.get('name')
-            qty = 1.0 # Basitlik için 1 birim kabul ediyoruz
+            # Miktar ayrıştırma: "3 adet", "100g" -> 3.0 veya 100.0
+            import re
+            nums = re.findall(r"[-+]?\d*\.\d+|\d+", qty_str)
+            qty = float(nums[0]) if nums else 1.0
+            
+            total_cal = float(item.get('kalori', 0))
+            total_pro = float(item.get('protein', 0))
+            total_carb = float(item.get('karbonhidrat', 0))
+            total_fat = float(item.get('yag', 0))
             
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
             if not food:
                 food = FoodItem(
                     name=name,
-                    calories=item.get('calories', 0),
-                    protein=item.get('protein_g', 0),
-                    carbs=item.get('carbohydrates_total_g', 0),
-                    fats=item.get('fat_total_g', 0)
+                    calories=total_cal / qty if qty > 0 else total_cal,
+                    protein=total_pro / qty if qty > 0 else total_pro,
+                    carbs=total_carb / qty if qty > 0 else total_carb,
+                    fats=total_fat / qty if qty > 0 else total_fat
                 )
+                db.session.add(food)
+            else:
+                food.calories = total_cal / qty if qty > 0 else total_cal
+                food.protein = total_pro / qty if qty > 0 else total_pro
+                food.carbs = total_carb / qty if qty > 0 else total_carb
+                food.fats = total_fat / qty if qty > 0 else total_fat
                 db.session.add(food)
             
             db.session.flush()
+            
             entry = LogEntry(
                 daily_log_id=log.id,
                 food_item_id=food.id,

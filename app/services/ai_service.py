@@ -3,32 +3,48 @@ import json
 import google.generativeai as genai
 from flask import current_app
 
+import os
+import json
+import google.generativeai as genai
+from flask import current_app
+from functools import lru_cache
+from app.integrations.spoonacular_client import SpoonacularClient
+from app.integrations.ninjas_client import ExerciseClient
+
 class AIService:
     def __init__(self):
         try:
-            api_key = current_app.config.get('GEMINI_API_KEY')
-            if not api_key:
-                print("DEBUG: [AIService] GEMINI_API_KEY is None!")
-            
-            genai.configure(api_key=api_key)
+            genai.configure(api_key=current_app.config.get('GEMINI_API_KEY'))
             self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
+            self.spoonacular = SpoonacularClient()
+            self.exercise_client = ExerciseClient()
         except Exception as e:
-            print(f"DEBUG: [AIService] Failed to initialize Gemini: {str(e)}")
+            print(f"DEBUG: [AIService] Initialization error: {str(e)}")
 
-    def generate_response(self, user_profile, daily_status, user_query):
-        try:
-            prompt = f"""
-            Sen bir profesyonel beslenme ve spor koçusun. 
-            Kullanıcı Bilgileri: Yaş: {user_profile['age']}, Boy: {user_profile['height']}, Kilo: {user_profile['weight']}, Hedef: {user_profile['goal']}.
-            Bugünkü Durum: Kalori: {daily_status['calories']}/{user_profile['target_calories']}, Protein: {daily_status['protein']}g/{user_profile['target_protein']}g.
-            
-            Kullanıcı sorusu: {user_query}
-            Lütfen kısa, bilimsel ve motive edici cevap ver.
-            """
-            response = self.model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            return f"AI servisi şu an yanıt veremiyor: {str(e)}"
+    @lru_cache(maxsize=32)
+    def get_exercises_from_api(self, muscle):
+        return self.exercise_client.get_exercises(muscle=muscle)
+
+    def orchestrate_fitness_plan(self, user_profile, muscle):
+        exercises = self.get_exercises_from_api(muscle)
+        if not exercises: return "Bu kas grubu için egzersiz bulunamadı."
+        
+        prompt = f"""
+        Kullanıcı hedefi: {user_profile['goal']}.
+        Bu kas grubu için antrenman önerisi: {json.dumps(exercises[:5])}
+        Kullanıcıya bu egzersizleri hedefine göre nasıl yapması gerektiğini profesyonelce açıkla.
+        """
+        response = self.model.generate_content(prompt)
+        return response.text
+
+    def get_recipe_suggestions(self, ingredients):
+        recipes = self.spoonacular.find_recipes(ingredients)
+        if not recipes: return "Malzemelerinle uygun tarif bulamadım."
+        
+        prompt = f"Bulunan tarifler: {json.dumps(recipes)}. Bunları kullanıcının hedefine uygun şekilde seç ve kısa tariflerini ver."
+        response = self.model.generate_content(prompt)
+        return response.text
+    # ... parse_food_input ve diğer metodlar aynen kalır ...
 
     def parse_food_input(self, text):
         try:

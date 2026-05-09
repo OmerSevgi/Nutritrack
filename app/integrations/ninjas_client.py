@@ -18,8 +18,16 @@ class CalorieNinjasClient(APIClient):
 
     def get_nutrition(self, query):
         url = f"{self.base_url}/nutritionquery?query={query}"
-        response = requests.get(url, headers=self._get_headers())
-        return response.json() if response.status_code == 200 else None
+        try:
+            response = requests.get(url, headers=self._get_headers())
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"DEBUG: CalorieNinjas API error! Status: {response.status_code}, Body: {response.text}")
+                return None
+        except Exception as e:
+            print(f"DEBUG: CalorieNinjas API request failed: {str(e)}")
+            return None
 
 class ExerciseClient(APIClient):
     def __init__(self):

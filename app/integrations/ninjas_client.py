@@ -15,6 +15,7 @@ class CalorieNinjasClient(APIClient):
     def __init__(self):
         self.api_key = os.environ.get('CALORIE_NINJAS_KEY')
         self.base_url = "https://api.api-ninjas.com/v1"
+        print(f"DEBUG: CalorieNinjas Key Loaded: {self.api_key is not None}")
 
     def get_nutrition(self, query):
         url = f"{self.base_url}/nutrition"

@@ -33,24 +33,41 @@ class AIService:
     def parse_food_input(self, text):
         try:
             system_prompt = """
-            Görevin kullanıcı girdilerini analiz etmek ve kalori ile makro değerlerini hesaplamaktır.
-            Sadece JSON döndür. 
-            Format:
+            Sen uzman bir diyetisyen ve veri mühendisisin. Görevin, kullanıcıdan gelen besin girdilerini bilimsel besin veritabanı (USDA standartları) değerlerine göre analiz etmektir.
+
+            KURALLAR (KESİNLİKLE UY):
+            1. BİRİM HESABI: 100g bazlı değerleri kullan. 'kalori', 'protein', 'karbonhidrat', 'yag' değerleri 100g içindir.
+            2. TOPLAM HESABI: Kullanıcının girdiği miktara (örn: 200g) göre 'toplam_kalori' vb. değerleri (Birim Değer * Miktar / 100) formülüyle hesapla.
+            3. HESAPLAMA MANTIĞI: 
+               - 1 yumurta (orta boy) ~75 kcal | 6g Protein | 0.5g Karb | 5g Yağ
+               - 100g Tavuk Göğsü (pişmiş) ~165 kcal | 31g Protein | 0g Karb | 3.6g Yağ
+               - 100g Beyaz Pirinç (pişmiş) ~130 kcal | 2.7g Protein | 28g Karb | 0.3g Yağ
+            4. HATA PAYI: Eğer besin tam eşleşmiyorsa en yakın standart değeri kullan, asla uydurma.
+
+            ÇIKTI FORMATI (Sadece JSON):
             {
               "besinler": [
                 {
                   "ad": "Besin Adı",
-                  "miktar": "100g",
-                  "kalori": 0,
-                  "protein": 0,
+                  "miktar": "150g",
+                  "kalori": 165,
+                  "protein": 31,
                   "karbonhidrat": 0,
-                  "yag": 0
+                  "yag": 3.6
                 }
               ]
             }
+            * Not: Döndürdüğün değerler 100g (birim) bazlı değil, kullanıcının yediği toplam miktara göre hesaplanmış (total) değerler olsun.
             """
             prompt = f"{system_prompt}\nÖğün Metni: {text}"
-            response = self.model.generate_content(prompt)
+            
+            # Hız ve doğruluk optimizasyonu (Sadece bu metod için)
+            generation_config = {
+                "temperature": 0.0,
+                "max_output_tokens": 400
+            }
+            
+            response = self.model.generate_content(prompt, generation_config=generation_config)
             
             # Markdown temizliği
             raw_text = response.text.strip().replace("```json", "").replace("```", "")

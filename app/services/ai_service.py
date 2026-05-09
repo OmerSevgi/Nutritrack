@@ -92,3 +92,33 @@ class AIService:
             return response.text
         except Exception as e:
             return f"Tarif oluşturulamadı: {str(e)}"
+
+    def analyze_workout(self, user_profile, workout_text, workout_history=None):
+        try:
+            history_context = "Son antrenmanların:\n" + "\n".join([f"- {h['date']}: {h['description']}" for h in workout_history]) if workout_history else ""
+            prompt = f"""
+            Sen NutriTrack uygulamasının kıdemli Personal Trainer'ısın. 
+            GÖREVİN: Kullanıcının antrenmanını analiz et ve JSON döndür.
+            
+            JSON FORMATI DÖN:
+            {{
+                "exercises": [{{"name": "Bench Press", "weight": 60, "sets": 3, "reps": 10}}],
+                "feedback": "..."
+            }}
+            
+            Bugünkü antrenman: {workout_text}
+            """
+            response = self.model.generate_content(prompt)
+            return json.loads(response.text.strip().replace("```json", "").replace("```", ""))
+        except Exception as e:
+            print(f"Error analyzing workout: {str(e)}")
+            return None
+
+    def generate_weekly_fitness_report(self, user_profile, weekly_stats):
+        try:
+            stats_context = "\n".join([f"- {ex}: Toplam Hacim {d['total_volume']}kg, Max {d['max_weight']}kg" for ex, d in weekly_stats.items()])
+            prompt = f"Sen Baş Antrenörsün. {user_profile['goal']} hedefine göre haftalık özetle: {stats_context}"
+            response = self.model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            return f"Rapor oluşturulamadı: {str(e)}"

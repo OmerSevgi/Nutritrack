@@ -55,13 +55,12 @@ def log_ai_meal(current_user):
     if not text:
         return jsonify({'error': 'No text provided'}), 400
         
-    ai_service = AIService()
-    food_items_data = ai_service.parse_food_input(text)
-    
-    print(f"DEBUG: Parsed food items: {food_items_data}") # Debug logu
+    from app.integrations.ninjas_client import CalorieNinjasClient
+    ninjas_client = CalorieNinjasClient()
+    food_items_data = ninjas_client.get_nutrition(text)
     
     if not food_items_data:
-        return jsonify({'error': 'Could not parse any food items'}), 400
+        return jsonify({'error': 'Could not find nutrition data'}), 400
         
     # Get or create today's log
     today = datetime.utcnow().date()
@@ -69,55 +68,27 @@ def log_ai_meal(current_user):
     if not log:
         log = DailyLog(user_id=current_user.id, date=today)
         db.session.add(log)
-        db.session.flush() # ID'yi alabilmek için
+        db.session.flush()
     
     try:
         logged_items = []
         for item in food_items_data:
-            name = item.get('ad')
-            qty_str = item.get('miktar', '100g')
+            name = item.get('name')
+            qty = item.get('serving_size_g', 100) / 100  # Varsayılan 100g bazlı
             
-            # AI artık 'toplam' değerleri döndürüyor (prompt'a göre)
-            total_cal = item.get('kalori', 0)
-            total_pro = item.get('protein', 0)
-            total_carb = item.get('karbonhidrat', 0)
-            total_fat = item.get('yag', 0)
-            
-            # Basit bir miktar ayrıştırma (sadece miktar değerini almak için)
-            qty = 1.0
-            if isinstance(qty_str, str):
-                import re
-                nums = re.findall(r"[-+]?\d*\.\d+|\d+", qty_str)
-                if nums: qty = float(nums[0])
-
-            # Try to find existing food item by name (case-insensitive)
             food = FoodItem.query.filter(FoodItem.name.ilike(name)).first()
-
-            # AI'dan gelen toplam değerleri 100g bazına indirgeyerek kaydet (Basitleştirilmiş yaklaşım)
-            unit_cal = total_cal / qty if qty > 0 else total_cal
-            unit_pro = total_pro / qty if qty > 0 else total_pro
-            unit_carb = total_carb / qty if qty > 0 else total_carb
-            unit_fat = total_fat / qty if qty > 0 else total_fat
-
+            
             if not food:
-                # Create new food item
                 food = FoodItem(
                     name=name,
-                    calories=unit_cal,
-                    protein=unit_pro,
-                    carbs=unit_carb,
-                    fats=unit_fat
+                    calories=item.get('calories', 0),
+                    protein=item.get('protein_g', 0),
+                    carbs=item.get('carbohydrates_total_g', 0),
+                    fats=item.get('fat_total_g', 0)
                 )
                 db.session.add(food)
-            else:
-                # Update existing food item with AI's latest, most accurate values
-                food.calories = unit_cal
-                food.protein = unit_pro
-                food.carbs = unit_carb
-                food.fats = unit_fat
-                db.session.add(food) # Ensure updated food is tracked
-
-            db.session.flush() # Commit'ten önce ID'leri al
+            
+            db.session.flush()
             
             entry = LogEntry(
                 daily_log_id=log.id,

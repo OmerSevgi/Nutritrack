@@ -1,6 +1,7 @@
 import os
 import json
 from groq import Groq
+import google.generativeai as genai
 from flask import current_app
 from functools import lru_cache
 from app.integrations.spoonacular_client import SpoonacularClient
@@ -9,12 +10,44 @@ from app.integrations.ninjas_client import ExerciseClient
 class AIService:
     def __init__(self):
         try:
-            self.client = Groq(api_key=current_app.config.get('GROQ_API_KEY'))
-            self.model = "llama-3.3-70b-versatile"
+            # Groq için anahtar kontrolü
+            groq_key = current_app.config.get('GROQ_API_KEY')
+            if groq_key:
+                self.client = Groq(api_key=groq_key)
+                self.model = "llama-3.3-70b-versatile"
+            else:
+                print("DEBUG: [AIService] GROQ_API_KEY is missing!")
+            
+            # Gemini için anahtar kontrolü
+            gemini_key = current_app.config.get('GEMINI_API_KEY')
+            if gemini_key:
+                genai.configure(api_key=gemini_key)
+                self.gemini_model = genai.GenerativeModel('gemini-2.5-flash-lite')
+            else:
+                print("DEBUG: [AIService] GEMINI_API_KEY is missing!")
+
             self.spoonacular = SpoonacularClient()
             self.exercise_client = ExerciseClient()
         except Exception as e:
-            print(f"DEBUG: [AIService] Groq initialization error: {str(e)}")
+            print(f"DEBUG: [AIService] Initialization error: {str(e)}")
+
+    def generate_response(self, user_profile, daily_status, user_query):
+        try:
+            prompt = f"""
+            Sen bir profesyonel beslenme ve spor koçusun. 
+            Kullanıcı Bilgileri: Yaş: {user_profile['age']}, Boy: {user_profile['height']}, Kilo: {user_profile['weight']}, Hedef: {user_profile['goal']}.
+            Bugünkü Durum: Kalori: {daily_status['calories']}/{user_profile['target_calories']}, Protein: {daily_status['protein']}g/{user_profile['target_protein']}g.
+            
+            Kullanıcı sorusu: {user_query}
+            Lütfen kısa, bilimsel ve motive edici cevap ver.
+            """
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            return f"AI servisi şu an yanıt veremiyor: {str(e)}"
 
     @lru_cache(maxsize=32)
     def get_exercises_from_api(self, muscle):
@@ -64,16 +97,13 @@ class AIService:
               ]
             }
             """
-            completion = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Öğün Metni: {text}"}
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.1
-            )
-            data = json.loads(completion.choices[0].message.content)
+            prompt = f"{system_prompt}\nÖğün Metni: {text}"
+            
+            # Besin analizi için Gemini kullanıyoruz (Daha iyi JSON desteği için)
+            response = self.gemini_model.generate_content(prompt)
+            raw_text = response.text.strip().replace("```json", "").replace("```", "")
+            
+            data = json.loads(raw_text)
             return data.get("besinler", [])
         except Exception as e:
             print(f"Error parsing food input: {str(e)}")

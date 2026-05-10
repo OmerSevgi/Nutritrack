@@ -79,10 +79,18 @@ def get_today_routine(current_user):
 @token_required
 def complete_workout(current_user):
     data = request.get_json()
+    routine_id = data.get('routine_id')
+    
+    # Validate routine_id if provided
+    routine = None
+    if routine_id:
+        routine = WorkoutRoutine.query.filter_by(id=routine_id, user_id=current_user.id).first()
+        if not routine:
+            return jsonify({'error': 'Invalid routine ID'}), 400
     
     workout = Workout(
         user_id=current_user.id,
-        routine_id=data.get('routine_id'),
+        routine_id=routine.id if routine else None,
         workout_type="Structured",
         timestamp=datetime.utcnow()
     )

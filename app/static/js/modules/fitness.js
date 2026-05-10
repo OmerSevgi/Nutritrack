@@ -11,8 +11,15 @@ async function initFitnessTab() {
     const todayRes = await secureFetch('/api/fitness/today-routine');
     if (todayRes && todayRes.ok) {
         const routine = await todayRes.json();
+        window.currentRoutineId = routine.id; // Store globally for usage
         renderTodayTracker(routine);
+    } else {
+        document.getElementById('todayRoutineName').innerText = "Bugün için program yok.";
     }
+}
+
+function editRoutine(dayIndex) {
+    alert("Program düzenleme yakında eklenecek!");
 }
 
 function renderRoutineBuilder(routines) {
@@ -75,7 +82,7 @@ async function completeWorkout() {
     
     const res = await secureFetch('/api/fitness/workout/complete', {
         method: 'POST',
-        body: JSON.stringify({ routine_id: 1, exercises }) // Need to dynamic routine_id
+        body: JSON.stringify({ routine_id: window.currentRoutineId, exercises })
     });
     
     if (res && res.ok) {

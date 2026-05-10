@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = input.value;
             input.value = '';
             setButtonLoading(btn, true);
-            const res = await secureFetch('/api/ai/ask-coach', { method: 'POST', body: JSON.stringify({ query: text }) });
+            const res = await secureFetch('/api/fitness/ask-coach', { method: 'POST', body: JSON.stringify({ query: text }) });
             setButtonLoading(btn, false);
             
             if (res && res.ok) {

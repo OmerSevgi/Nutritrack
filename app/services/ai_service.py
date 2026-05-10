@@ -19,15 +19,17 @@ class AIService:
     def generate_fridge_recipe(self, goal, ing): return self.nutrition.generate_fridge_recipe(goal, ing)
     def analyze_structured_workout(self, prof, planned, actual): return self.fitness.analyze_structured_workout(prof, planned, actual)
     def get_holistic_context(self, user_id):
-        # Fetch nutrition summary and fitness performance
+        # Fetch nutrition summary, fitness performance and FULL weekly routine
         from app.models.nutrition import DailyLog
-        from app.models.user_health import Workout
+        from app.models.user_health import Workout, WorkoutRoutine
         
         last_logs = DailyLog.query.filter_by(user_id=user_id).order_by(DailyLog.date.desc()).limit(3).all()
         last_workouts = Workout.query.filter_by(user_id=user_id).order_by(Workout.timestamp.desc()).limit(3).all()
+        weekly_routines = WorkoutRoutine.query.filter_by(user_id=user_id).all()
         
         context = f"Son beslenme: {[l.summary_text for l in last_logs]}. "
-        context += f"Son antrenmanlar: {[w.description for w in last_workouts]}."
+        context += f"Son antrenmanlar: {[w.description for w in last_workouts]}. "
+        context += f"Haftalık Program: {[f'{r.name} (Gün: {r.day_of_week}): ' + ', '.join([e.exercise_name for e in r.exercises]) for r in weekly_routines]}."
         return context
 
     def ask_coach(self, user_profile, context, query):

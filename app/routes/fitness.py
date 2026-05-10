@@ -70,6 +70,15 @@ def update_routine(current_user, id):
     db.session.commit()
     return jsonify({'message': 'Routine updated'}), 200
 
+@fitness_bp.route('/routines/<int:id>', methods=['DELETE'])
+@token_required
+def delete_routine(current_user, id):
+    routine = WorkoutRoutine.query.filter_by(id=id, user_id=current_user.id).first()
+    if not routine: return jsonify({'error': 'Routine not found'}), 404
+    db.session.delete(routine)
+    db.session.commit()
+    return jsonify({'message': 'Routine deleted'}), 200
+
 @fitness_bp.route('/today-routine', methods=['GET'])
 @token_required
 def get_today_routine(current_user):

@@ -47,15 +47,28 @@ def create_routine(current_user):
     db.session.commit()
     return jsonify({'message': 'Routine created', 'id': routine.id}), 201
 
-@fitness_bp.route('/routines/<int:id>', methods=['DELETE'])
+@fitness_bp.route('/routines/<int:id>', methods=['PUT'])
 @token_required
-def delete_routine(current_user, id):
+def update_routine(current_user, id):
     routine = WorkoutRoutine.query.filter_by(id=id, user_id=current_user.id).first()
-    if not routine:
-        return jsonify({'error': 'Routine not found'}), 404
-    db.session.delete(routine)
+    if not routine: return jsonify({'error': 'Routine not found'}), 404
+    
+    data = request.get_json()
+    routine.name = data.get('name', routine.name)
+    
+    # Clear old exercises and add new ones
+    RoutineExercise.query.filter_by(routine_id=routine.id).delete()
+    for ex_data in data.get('exercises', []):
+        ex = RoutineExercise(
+            routine_id=routine.id,
+            exercise_name=ex_data.get('name'),
+            target_sets=ex_data.get('sets', 3),
+            target_reps=ex_data.get('reps', 10)
+        )
+        db.session.add(ex)
+    
     db.session.commit()
-    return jsonify({'message': 'Routine deleted'}), 200
+    return jsonify({'message': 'Routine updated'}), 200
 
 @fitness_bp.route('/today-routine', methods=['GET'])
 @token_required

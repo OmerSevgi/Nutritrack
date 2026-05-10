@@ -236,4 +236,24 @@
         </form>
     </div>
 </div>
+<!-- Routine Editor Modal -->
+<div id="routineModal" class="fixed inset-0 bg-black/80 z-[60] hidden flex items-center justify-center p-4">
+    <div class="glass w-full max-w-lg p-8 rounded-[2rem] border border-white/5 space-y-6">
+        <h3 id="modalTitle" class="text-xl font-black text-white">Program Düzenle</h3>
+        <input type="hidden" id="modalDayIndex">
+        <input type="text" id="routineName" placeholder="Program Adı (örn: Göğüs Günü)" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-white">
+        
+        <div id="exerciseList" class="space-y-3">
+            <!-- Exercises will be injected here -->
+        </div>
+        
+        <button onclick="addExerciseRow()" class="text-xs text-blue-400 font-bold">+ Yeni Hareket Ekle</button>
+        
+        <div class="flex gap-4 mt-6">
+            <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold">İptal</button>
+            <button onclick="saveRoutine()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-black">Kaydet</button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

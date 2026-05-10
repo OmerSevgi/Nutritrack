@@ -18,10 +18,6 @@ async function initFitnessTab() {
     }
 }
 
-function editRoutine(dayIndex) {
-    alert("Program düzenleme yakında eklenecek!");
-}
-
 function renderRoutineBuilder(routines) {
     const container = document.getElementById('routineBuilder');
     const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
@@ -33,13 +29,53 @@ function renderRoutineBuilder(routines) {
         col.className = 'glass p-4 rounded-xl border border-white/5';
         col.innerHTML = `
             <p class="text-[10px] font-black text-slate-500 uppercase mb-2">${day}</p>
-            <div class="space-y-2 mb-4">
-                ${routine ? routine.exercises.map(ex => `<p class="text-[10px] text-white font-bold">${ex.name}</p>`).join('') : '<p class="text-[9px] text-slate-600 italic">Boş</p>'}
+            <div class="space-y-2 mb-4 h-24 overflow-y-auto">
+                ${routine ? routine.exercises.map(ex => `<p class="text-[9px] text-white font-bold">${ex.name}</p>`).join('') : '<p class="text-[9px] text-slate-600 italic">Boş</p>'}
             </div>
-            <button onclick="editRoutine(${index})" class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded">Düzenle</button>
+            <button onclick="editRoutine(${index})" class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded w-full">Düzenle</button>
         `;
         container.appendChild(col);
     });
+}
+
+function editRoutine(dayIndex) {
+    document.getElementById('modalDayIndex').value = dayIndex;
+    document.getElementById('exerciseList').innerHTML = '';
+    document.getElementById('routineModal').classList.remove('hidden');
+    addExerciseRow();
+}
+
+function closeModal() { document.getElementById('routineModal').classList.add('hidden'); }
+
+function addExerciseRow(name = '', sets = 3, reps = 10) {
+    const div = document.createElement('div');
+    div.className = 'flex gap-2';
+    div.innerHTML = `
+        <input type="text" value="${name}" placeholder="Hareket" class="flex-1 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-name">
+        <input type="number" value="${sets}" class="w-12 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-sets">
+        <input type="number" value="${reps}" class="w-12 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-reps">
+    `;
+    document.getElementById('exerciseList').appendChild(div);
+}
+
+async function saveRoutine() {
+    const day = document.getElementById('modalDayIndex').value;
+    const name = document.getElementById('routineName').value;
+    const exercises = [];
+    document.querySelectorAll('#exerciseList > div').forEach(row => {
+        exercises.push({
+            name: row.querySelector('.ex-name').value,
+            sets: row.querySelector('.ex-sets').value,
+            reps: row.querySelector('.ex-reps').value
+        });
+    });
+    
+    await secureFetch('/api/fitness/routines', {
+        method: 'POST',
+        body: JSON.stringify({ day_of_week: day, name, exercises })
+    });
+    closeModal();
+    initFitnessTab();
 }
 
 function renderTodayTracker(routine) {

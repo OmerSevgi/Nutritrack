@@ -54,10 +54,14 @@ class NutritionLoggerService:
             if any(x in name.lower() or x in search_name for x in ['pirinç', 'pilav', 'rice', 'cream rice']):
                 search_name = "raw rice"
 
+            print(f"[NUTRITION LOG] Processing item: {name} (Searching for: {search_name})")
+            
             food = FoodItem.query.filter(FoodItem.name.ilike(search_name)).first()
             
             # API'den her zaman 100g bazlı taze veriyi çek ve veritabanını GÜNCELLE
             api_data = ninjas_client.get_nutrition(search_name)
+            print(f"[NUTRITION LOG] API Response for '{search_name}': {api_data}")
+            
             nutrition = api_data[0] if api_data else {}
             
             if not food:

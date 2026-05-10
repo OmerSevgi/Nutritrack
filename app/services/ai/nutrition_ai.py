@@ -8,6 +8,7 @@ class NutritionAIService(AIBaseService):
         self.spoonacular = SpoonacularClient()
 
     def parse_food_input(self, text):
+        print(f"\n[AI LOG] Requesting parse for: '{text}'")
         system_prompt = """
         Sen uzman bir diyetisyen ve veri mühendisisin.
         GÖREVİN: Kullanıcı metnindeki besinleri analiz et ve her birinin toplam ağırlığını GRAM (g) cinsinden bilimsel ve sektörel standartlara göre tahmin et.
@@ -18,10 +19,13 @@ class NutritionAIService(AIBaseService):
         """
         # Gemini yerine Groq JSON modunu kullanıyoruz
         raw_json = self._call_groq(f"{system_prompt}\n{text}", json_mode=True)
+        print(f"[AI LOG] Raw response from Groq: {raw_json}")
         try:
-            return json.loads(raw_json).get("besinler", [])
+            parsed_data = json.loads(raw_json).get("besinler", [])
+            print(f"[AI LOG] Parsed foods: {parsed_data}")
+            return parsed_data
         except Exception as e:
-            print(f"Groq parsing error: {e}")
+            print(f"[AI LOG] Groq parsing error: {e}")
             return []
 
     def generate_fridge_recipe(self, user_goal, ingredients):

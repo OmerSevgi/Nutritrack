@@ -22,16 +22,16 @@ function renderRoutineBuilder(routines) {
     container.innerHTML = `
         <div class="space-y-6">
             <div class="flex items-center justify-between">
-                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div class="grid grid-cols-4 md:grid-cols-7 gap-2 w-full">
                     ${days.map((day, i) => `
-                        <button onclick="selectDay(${i})" id="dayBtn-${i}" class="px-5 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-[11px] font-black text-slate-400 hover:text-white hover:border-blue-500/50 transition-all whitespace-nowrap">
+                        <button onclick="selectDay(${i})" id="dayBtn-${i}" class="px-2 py-4 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-black text-slate-400 hover:text-white hover:border-blue-500/50 transition-all">
                             ${day}
                         </button>
                     `).join('')}
                 </div>
             </div>
-            <div id="dayDetail" class="p-6 bg-slate-950/50 rounded-3xl border border-white/5 min-h-[150px]">
-                <p class="text-slate-500 text-sm text-center pt-10 font-bold italic">Bir gün seçerek antrenmanını görüntüle veya düzenle</p>
+            <div id="dayDetail" class="p-8 bg-slate-950/50 rounded-3xl border border-white/5 min-h-[200px]">
+                <p class="text-slate-500 text-sm text-center pt-16 font-bold italic">Antrenmanını görüntülemek veya düzenlemek için bir gün seç.</p>
             </div>
         </div>
     `;

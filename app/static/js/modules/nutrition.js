@@ -13,28 +13,25 @@ async function fetchSummary(date = currentDate) {
 
 function updateNutritionUI(data) {
     try {
-        const setVal = (id, val) => {
+        const setVal = (id, cur, target) => {
             const el = document.getElementById(id);
-            if (el) el.innerText = Math.round(val || 0);
+            if (el) {
+                const targetText = target ? ` / ${Math.round(target)}` : '';
+                el.innerText = `${Math.round(cur || 0)}${targetText}`;
+            }
         };
         const setBar = (id, cur, target) => {
             const el = document.getElementById(id);
             if (el) el.style.width = (target && target > 0) ? `${Math.min((cur / target) * 100, 100)}%` : '0%';
         };
 
-        setVal('calDisplay', data.calories);
-        setVal('proDisplay', data.protein);
-        setVal('carbDisplay', data.carbs);
-        setVal('fatDisplay', data.fats);
+        const targets = data.targets || {};
+        setVal('calDisplay', data.calories, targets.calories);
+        setVal('proDisplay', data.protein, targets.protein);
+        setVal('carbDisplay', data.carbs, targets.carbs);
+        setVal('fatDisplay', data.fats, targets.fats);
         setVal('nutriScoreDisplay', data.nutri_score || 0);
-
-        if (data.targets) {
-            setBar('calBar', data.calories, data.targets.calories);
-            setBar('proBar', data.protein, data.targets.protein);
-            setBar('carbBar', data.carbs, data.targets.carbs);
-            setBar('fatBar', data.fats, data.targets.fats);
-        }
-
+...
         const waterEl = document.getElementById('waterDisplay');
         if (waterEl) waterEl.innerText = Math.round(data.water || 0);
         

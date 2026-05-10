@@ -26,10 +26,10 @@ function updateNutritionUI(data) {
         };
 
         const targets = data.targets || {};
-        setVal('calDisplay', data.calories, targets.calories);
-        setVal('proDisplay', data.protein, targets.protein);
-        setVal('carbDisplay', data.carbs, targets.carbs);
-        setVal('fatDisplay', data.fats, targets.fats);
+        setVal('calDisplay', data.calories, targets.calories || 0);
+        setVal('proDisplay', data.protein, targets.protein || 0);
+        setVal('carbDisplay', data.carbs, targets.carbs || 0);
+        setVal('fatDisplay', data.fats, targets.fats || 0);
         setVal('nutriScoreDisplay', data.nutri_score || 0);
 ...
         const waterEl = document.getElementById('waterDisplay');

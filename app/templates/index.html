@@ -145,6 +145,27 @@
 
                 <!-- Fitness Section -->
                 <div id="fitnessSection" class="hidden space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+                    <!-- Fixed Program Editor -->
+                    <div class="glass p-6 rounded-[2rem] border-white/5 shadow-2xl overflow-hidden">
+                        <button onclick="toggleProgramEditor()" class="w-full flex items-center justify-between group">
+                            <h3 class="text-sm font-black text-slate-400 flex items-center gap-3">
+                                <i class="fa-solid fa-clipboard-list text-blue-400"></i> Mevcut Antrenman Programım
+                            </h3>
+                            <i id="programChevron" class="fa-solid fa-chevron-down text-slate-600 group-hover:text-white transition-all"></i>
+                        </button>
+                        <div id="programEditor" class="hidden mt-6 space-y-4 animate-in slide-in-from-top-2">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                                Yapay zekanın antrenmanlarını buna göre yorumlaması için programını buraya detaylıca yazabilirsin.
+                            </p>
+                            <textarea id="fitnessProgramInput" class="w-full bg-slate-950/50 border-2 border-slate-800 rounded-2xl p-5 focus:outline-none focus:border-blue-500 text-white text-xs leading-relaxed min-h-[150px]" placeholder="Örn: Pazartesi: Göğüs-Biceps..."></textarea>
+                            <div class="flex justify-end">
+                                <button onclick="saveFitnessProgram()" id="saveProgramBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase transition-all shadow-lg shadow-blue-500/20">
+                                    Programı Kaydet
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="glass p-8 rounded-[2rem] border-blue-500/20 shadow-2xl">
                          <h3 class="text-lg font-black text-blue-400 mb-6 flex items-center gap-3">
                             <i class="fa-solid fa-dumbbell"></i> Personal Trainer

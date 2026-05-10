@@ -46,6 +46,8 @@ class HealthProfile(db.Model):
     target_carbs = db.Column(db.Float)
     target_fats = db.Column(db.Float)
     
+    fitness_program = db.Column(db.Text) # New: Fixed fitness program context for AI
+    
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Workout(db.Model):

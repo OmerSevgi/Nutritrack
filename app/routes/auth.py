@@ -62,6 +62,7 @@ def get_profile(current_user):
         'weight': profile.weight,
         'activity_level': profile.activity_level,
         'goal': profile.goal,
+        'fitness_program': profile.fitness_program,
         'targets': {
             'calories': profile.target_calories,
             'protein': profile.target_protein,
@@ -87,6 +88,7 @@ def update_profile(current_user):
     profile.weight = data.get('weight', profile.weight)
     profile.activity_level = data.get('activity_level', profile.activity_level)
     profile.goal = data.get('goal', profile.goal)
+    profile.fitness_program = data.get('fitness_program', profile.fitness_program)
     
     # Recalculate targets
     HealthService.update_user_targets(profile)

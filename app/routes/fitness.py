@@ -24,7 +24,8 @@ def log_workout(current_user):
     
     user_profile = {
         'goal': current_user.health_profile.goal if current_user.health_profile else 'maintenance',
-        'weight': current_user.health_profile.weight if current_user.health_profile else 70
+        'weight': current_user.health_profile.weight if current_user.health_profile else 70,
+        'fitness_program': current_user.health_profile.fitness_program if current_user.health_profile else None
     }
     
     analysis = ai_service.analyze_workout(user_profile, text, workout_history=history_data)

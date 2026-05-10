@@ -133,5 +133,38 @@ window.onload = () => {
     // Fetch user profile for name and streak
     secureFetch('/api/auth/profile').then(res => res.json()).then(data => {
         if (data.username) document.getElementById('userNameDisplay').innerText = data.username;
+        if (data.fitness_program) {
+            const programInput = document.getElementById('fitnessProgramInput');
+            if (programInput) programInput.value = data.fitness_program;
+        }
     });
 };
+
+function toggleProgramEditor() {
+    const editor = document.getElementById('programEditor');
+    const chevron = document.getElementById('programChevron');
+    if (editor) {
+        editor.classList.toggle('hidden');
+        if (chevron) {
+            chevron.classList.toggle('fa-chevron-down');
+            chevron.classList.toggle('fa-chevron-up');
+        }
+    }
+}
+
+async function saveFitnessProgram() {
+    const btn = document.getElementById('saveProgramBtn');
+    const program = document.getElementById('fitnessProgramInput').value;
+    
+    setButtonLoading(btn, true);
+    const res = await secureFetch('/api/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ fitness_program: program })
+    });
+    setButtonLoading(btn, false);
+    
+    if (res && res.ok) {
+        alert('Programınız başarıyla kaydedildi!');
+        toggleProgramEditor();
+    }
+}

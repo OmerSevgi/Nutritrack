@@ -1,17 +1,14 @@
 
 async function initFitnessTab() {
-    // 1. Fetch and render routine builder
     const res = await secureFetch('/api/fitness/routines');
     if (res && res.ok) {
-        const routines = await res.json();
-        renderRoutineBuilder(routines);
+        window.allRoutines = await res.json();
+        renderRoutineBuilder(window.allRoutines);
     }
-    
-    // 2. Fetch today's routine for tracker
     const todayRes = await secureFetch('/api/fitness/today-routine');
     if (todayRes && todayRes.ok) {
         const routine = await todayRes.json();
-        window.currentRoutineId = routine.id; // Store globally for usage
+        window.currentRoutineId = routine.id;
         renderTodayTracker(routine);
     } else {
         document.getElementById('todayRoutineName').innerText = "Bugün için program yok.";
@@ -21,54 +18,49 @@ async function initFitnessTab() {
 function renderRoutineBuilder(routines) {
     const container = document.getElementById('routineBuilder');
     const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-    container.innerHTML = '';
-    
-    days.forEach((day, index) => {
-        const routine = routines.find(r => r.day_of_week === index);
-        const col = document.createElement('div');
-        col.className = 'glass p-4 rounded-xl border border-white/5';
-        col.innerHTML = `
-            <p class="text-[10px] font-black text-slate-500 uppercase mb-2">${day}</p>
-            <div class="space-y-2 mb-4 h-24 overflow-y-auto">
-                ${routine ? routine.exercises.map(ex => `<p class="text-[9px] text-white font-bold">${ex.name}</p>`).join('') : '<p class="text-[9px] text-slate-600 italic">Boş</p>'}
-            </div>
-            <button onclick="editRoutine(${index})" class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded w-full">Düzenle</button>
-        `;
-        container.appendChild(col);
-    });
+    container.innerHTML = `
+        <div class="flex gap-2 overflow-x-auto pb-4">
+            ${days.map((day, i) => `
+                <button onclick="editRoutine(${i})" class="flex-1 min-w-[60px] p-3 rounded-xl bg-slate-800 text-[10px] font-black text-white hover:bg-blue-600 transition">
+                    ${day}
+                </button>
+            `).join('')}
+        </div>
+    `;
 }
 
 function editRoutine(dayIndex) {
     document.getElementById('modalDayIndex').value = dayIndex;
+    const routine = window.allRoutines.find(r => r.day_of_week === dayIndex);
+    document.getElementById('routineName').value = routine ? routine.name : '';
     document.getElementById('exerciseList').innerHTML = '';
+    
+    if (routine) {
+        routine.exercises.forEach(ex => addExerciseRow(ex.name, ex.sets, ex.reps));
+    } else {
+        addExerciseRow();
+    }
     document.getElementById('routineModal').classList.remove('hidden');
-    addExerciseRow();
 }
 
 function closeModal() { document.getElementById('routineModal').classList.add('hidden'); }
 
 function addExerciseRow(name = '', sets = 3, reps = 10) {
     const div = document.createElement('div');
-    div.className = 'grid grid-cols-3 gap-2 items-center';
+    div.className = 'grid grid-cols-3 gap-2 items-center bg-slate-800 p-3 rounded-lg';
     div.innerHTML = `
-        <input type="text" value="${name}" placeholder="Hareket" class="col-span-1 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-name">
-        <div class="flex flex-col">
-            <label class="text-[8px] text-slate-500 uppercase">Set</label>
-            <input type="number" value="${sets}" class="w-12 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-sets">
-        </div>
-        <div class="flex flex-col">
-            <label class="text-[8px] text-slate-500 uppercase">Tekrar</label>
-            <select class="w-20 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-reps">
-                <option value="Tükeniş" ${reps=='Tükeniş'?'selected':''}>Tükeniş</option>
-                ${[5,8,10,12,15,20].map(r => `<option value="${r}" ${reps==r?'selected':''}>${r}</option>`).join('')}
-            </select>
-        </div>
+        <input type="text" value="${name}" placeholder="Hareket" class="col-span-1 bg-transparent border-none text-xs text-white ex-name">
+        <input type="number" value="${sets}" class="w-12 bg-slate-950 border border-slate-700 rounded p-1 text-xs text-white text-center ex-sets">
+        <select class="w-20 bg-slate-950 border border-slate-700 rounded p-1 text-xs text-white ex-reps">
+            <option value="Tükeniş" ${reps=='Tükeniş'?'selected':''}>Tükeniş</option>
+            ${[5,8,10,12,15,20].map(r => `<option value="${r}" ${reps==r?'selected':''}>${r}</option>`).join('')}
+        </select>
     `;
     document.getElementById('exerciseList').appendChild(div);
 }
 
 async function saveRoutine() {
-    const day = document.getElementById('modalDayIndex').value;
+    const day = parseInt(document.getElementById('modalDayIndex').value);
     const name = document.getElementById('routineName').value;
     const exercises = [];
     document.querySelectorAll('#exerciseList > div').forEach(row => {
@@ -79,10 +71,19 @@ async function saveRoutine() {
         });
     });
     
-    await secureFetch('/api/fitness/routines', {
-        method: 'POST',
-        body: JSON.stringify({ day_of_week: day, name, exercises })
-    });
+    // Check if updating or creating (simplified for now: always delete and post)
+    const existing = window.allRoutines.find(r => r.day_of_week === day);
+    if (existing) {
+        await secureFetch(`/api/fitness/routines/${existing.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ name, exercises })
+        });
+    } else {
+        await secureFetch('/api/fitness/routines', {
+            method: 'POST',
+            body: JSON.stringify({ day_of_week: day, name, exercises })
+        });
+    }
     closeModal();
     initFitnessTab();
 }

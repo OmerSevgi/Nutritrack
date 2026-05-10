@@ -222,13 +222,17 @@ def ask_coach(current_user):
     response = ai_service.ask_coach(user_profile, context, query)
     return jsonify({'response': response}), 200
 
-@fitness_bp.route('/workout/<int:workout_id>', methods=['DELETE'])
+@fitness_bp.route('/ai/performance-report', methods=['GET'])
 @token_required
-def delete_workout(current_user, workout_id):
-    workout = Workout.query.filter_by(id=workout_id, user_id=current_user.id).first()
-    if not workout:
-        return jsonify({'error': 'Workout not found'}), 404
+def get_performance_report(current_user):
+    from app.models.user_health import Workout
+    # Fetch all workouts for analysis
+    workouts = Workout.query.filter_by(user_id=current_user.id).order_by(Workout.timestamp.asc()).all()
+    history = [{
+        'date': w.timestamp.strftime('%Y-%m-%d'),
+        'data': w.weight_data
+    } for w in workouts]
     
-    db.session.delete(workout)
-    db.session.commit()
-    return jsonify({'message': 'Workout deleted successfully'}), 200
+    from app.services.ai.fitness_ai import FitnessAIService
+    report = FitnessAIService().analyze_performance_plateaus(history)
+    return jsonify({'report': report}), 200

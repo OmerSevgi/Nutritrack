@@ -7,24 +7,21 @@ class FitnessAIService(AIBaseService):
         super().__init__()
         self.exercise_client = ExerciseClient()
 
-    def analyze_structured_workout(self, user_profile, planned_data, actual_data):
+    def analyze_performance_plateaus(self, workout_history):
+        # Format history for AI
+        history_summary = json.dumps(workout_history)
         prompt = f"""
-        Sen profesyonel bir fitness antrenörüsün. Kullanıcının planladığı antrenman ile yaptığı antrenmanı karşılaştır.
-        
-        Planlanan: {json.dumps(planned_data)}
-        Yapılan: {json.dumps(actual_data)}
-        Hedef: {user_profile.get('goal')}
-        
-        GÖREV: Progresif yükleme, set/tekrar uyumu ve hacim analizi yaparak motive edici ve düzeltici profesyonel bir geri bildirim ver.
-        
-        Sadece şu JSON formatında dön:
-        {{"feedback": "Kısa ve etkileyici geri bildirimin"}}
+        Sen profesyonel bir fitness analistisin. Kullanıcının antrenman geçmişini analiz et:
+        {history_summary}
+
+        GÖREV:
+        1. Hangi egzersizlerde ilerleme durmuş (plateau)?
+        2. Hangi kas grupları ihmal edilmiş veya ilerlemiyor?
+        3. Bir deload haftası gerekiyor mu?
+
+        Cevabını kısa, net ve bilimsel bir dille ver.
         """
-        raw_json = self._call_groq(prompt, json_mode=True)
-        try:
-            return json.loads(raw_json).get("feedback", "Harika bir antrenmandı, devam et!")
-        except:
-            return "Antrenman analizi başarıyla tamamlandı!"
+        return self._call_groq(prompt)
 
     def orchestrate_fitness_plan(self, user_goal, muscle):
         exercises = self.exercise_client.get_exercises(muscle=muscle)

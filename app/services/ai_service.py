@@ -17,7 +17,7 @@ class AIService:
     # Proxy methods for backward compatibility
     def parse_food_input(self, text): return self.nutrition.parse_food_input(text)
     def generate_fridge_recipe(self, goal, ing): return self.nutrition.generate_fridge_recipe(goal, ing)
-    def analyze_workout(self, prof, text, hist=None): return self.fitness.analyze_workout(prof, text, hist)
+    def analyze_structured_workout(self, prof, planned, actual): return self.fitness.analyze_structured_workout(prof, planned, actual)
     def ask_coach(self, query): return self.nutrition._call_groq(query)
     def orchestrate_fitness_plan(self, goal, muscle): return self.fitness.orchestrate_fitness_plan(goal, muscle)
     def get_recipe_suggestions(self, ing): return self.nutrition.get_recipe_suggestions(ing)

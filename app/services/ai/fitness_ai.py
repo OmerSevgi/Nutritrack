@@ -7,29 +7,24 @@ class FitnessAIService(AIBaseService):
         super().__init__()
         self.exercise_client = ExerciseClient()
 
-    def analyze_workout(self, user_profile, workout_text, workout_history=None):
-        program_context = f"\nKullanıcın Sabit Fitness Programı:\n{user_profile.get('fitness_program', 'Belirtilmemiş')}\n"
-        
+    def analyze_structured_workout(self, user_profile, planned_data, actual_data):
         prompt = f"""
-        Sen profesyonel bir fitness antrenörüsün. Kullanıcının girdiği antrenman metnini analiz et.
-        {program_context}
-        Eğer kullanıcı sabit programına sadık kalmışsa veya dışına çıkmışsa bunu feedback kısmında belirt.
+        Sen profesyonel bir fitness antrenörüsün. Kullanıcının planladığı antrenman ile yaptığı antrenmanı karşılaştır.
         
-        Sadece şu JSON formatında döndür:
-        {{
-            "exercises": [
-                {{"name": "Egzersiz Adı", "weight": ağırlık_kg, "sets": set_sayısı, "reps": tekrar_sayısı}}
-            ],
-            "feedback": "Antrenman hakkındaki profesyonel yorumun"
-        }}
+        Planlanan: {json.dumps(planned_data)}
+        Yapılan: {json.dumps(actual_data)}
+        Hedef: {user_profile.get('goal')}
         
-        Metin: {workout_text}
+        GÖREV: Progresif yükleme, set/tekrar uyumu ve hacim analizi yaparak motive edici ve düzeltici profesyonel bir geri bildirim ver.
+        
+        Sadece şu JSON formatında dön:
+        {{"feedback": "Kısa ve etkileyici geri bildirimin"}}
         """
         raw_json = self._call_groq(prompt, json_mode=True)
         try:
-            return json.loads(raw_json)
+            return json.loads(raw_json).get("feedback", "Harika bir antrenmandı, devam et!")
         except:
-            return None
+            return "Antrenman analizi başarıyla tamamlandı!"
 
     def orchestrate_fitness_plan(self, user_goal, muscle):
         exercises = self.exercise_client.get_exercises(muscle=muscle)

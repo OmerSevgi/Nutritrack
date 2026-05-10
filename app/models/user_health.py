@@ -15,6 +15,7 @@ class User(db.Model):
     health_profile = db.relationship('HealthProfile', backref='user', uselist=False, cascade="all, delete-orphan")
     daily_logs = db.relationship('DailyLog', backref='user', lazy='dynamic')
     ai_interactions = db.relationship('AIInteraction', backref='user', lazy='dynamic')
+    routines = db.relationship('WorkoutRoutine', backref='user', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -46,27 +47,53 @@ class HealthProfile(db.Model):
     target_carbs = db.Column(db.Float)
     target_fats = db.Column(db.Float)
     
-    fitness_program = db.Column(db.Text) # New: Fixed fitness program context for AI
+    fitness_program = db.Column(db.Text) # General program context
     
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class WorkoutRoutine(db.Model):
+    __tablename__ = 'workout_routines'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    day_of_week = db.Column(db.Integer, nullable=False) # 0=Monday, 6=Sunday
+    name = db.Column(db.String(100)) # e.g., "Push Day"
+    exercises = db.relationship('RoutineExercise', backref='routine', lazy='dynamic', cascade="all, delete-orphan")
+
+class RoutineExercise(db.Model):
+    __tablename__ = 'routine_exercises'
+    id = db.Column(db.Integer, primary_key=True)
+    routine_id = db.Column(db.Integer, db.ForeignKey('workout_routines.id'), nullable=False)
+    exercise_name = db.Column(db.String(100), nullable=False)
+    target_sets = db.Column(db.Integer, default=3)
+    target_reps = db.Column(db.Integer, default=10)
 
 class Workout(db.Model):
     __tablename__ = 'workouts'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    routine_id = db.Column(db.Integer, db.ForeignKey('workout_routines.id'), nullable=True)
     
-    description = db.Column(db.Text, nullable=False) # "40 dk koştum", "3 set bench press yaptım"
-    workout_type = db.Column(db.String(50)) # cardio, strength, etc.
-    duration = db.Column(db.Integer) # minutes
+    description = db.Column(db.Text, nullable=True)
+    workout_type = db.Column(db.String(50)) 
+    duration = db.Column(db.Integer) 
     calories_burned = db.Column(db.Integer)
-    weight_data = db.Column(db.JSON) # New: Store weights, reps, sets
+    weight_data = db.Column(db.JSON) # Kept for backward compatibility or general storage
     
-    trainer_feedback = db.Column(db.Text) # AI Trainer's comment
-    
+    trainer_feedback = db.Column(db.Text) 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     user_rel = db.relationship('User', backref=db.backref('workouts', lazy='dynamic'))
+    sets = db.relationship('WorkoutSet', backref='workout', lazy='dynamic', cascade="all, delete-orphan")
+
+class WorkoutSet(db.Model):
+    __tablename__ = 'workout_sets'
+    id = db.Column(db.Integer, primary_key=True)
+    workout_id = db.Column(db.Integer, db.ForeignKey('workouts.id'), nullable=False)
+    exercise_name = db.Column(db.String(100), nullable=False)
+    set_number = db.Column(db.Integer, nullable=False)
+    weight = db.Column(db.Float)
+    reps = db.Column(db.Integer)
 
 class WeightLog(db.Model):
     __tablename__ = 'weight_logs'

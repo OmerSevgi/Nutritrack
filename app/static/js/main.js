@@ -13,7 +13,7 @@ function switchTab(tab) {
             if (sec) sec.classList.add('hidden');
         }
     });
-    if (tab === 'fitness') { fetchWorkouts(); fetchWeeklyStats(); fetchWeeklyReport(); }
+    if (tab === 'fitness') { initFitnessTab(); }
     if (tab === 'progress') { fetchWeightHistory(); }
 }
 

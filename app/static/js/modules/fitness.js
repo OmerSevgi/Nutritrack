@@ -88,14 +88,15 @@ function closeModal() { document.getElementById('routineModal').classList.add('h
 
 function addExerciseRow(name = '', sets = 3, reps = 10) {
     const div = document.createElement('div');
-    div.className = 'grid grid-cols-3 gap-2 items-center bg-slate-800 p-3 rounded-lg';
+    div.className = 'grid grid-cols-4 gap-2 items-center bg-slate-800 p-3 rounded-lg exercise-row';
     div.innerHTML = `
         <input type="text" value="${name}" placeholder="Hareket" class="col-span-1 bg-transparent border-none text-xs text-white ex-name">
-        <input type="number" value="${sets}" class="w-12 bg-slate-950 border border-slate-700 rounded p-1 text-xs text-white text-center ex-sets">
-        <select class="w-20 bg-slate-950 border border-slate-700 rounded p-1 text-xs text-white ex-reps">
+        <input type="number" value="${sets}" class="w-10 bg-slate-950 border border-slate-700 rounded p-1 text-xs text-white text-center ex-sets">
+        <select class="w-16 bg-slate-950 border border-slate-700 rounded p-1 text-xs text-white ex-reps">
             <option value="Tükeniş" ${reps=='Tükeniş'?'selected':''}>Tükeniş</option>
             ${[5,8,10,12,15,20].map(r => `<option value="${r}" ${reps==r?'selected':''}>${r}</option>`).join('')}
         </select>
+        <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash text-[10px]"></i></button>
     `;
     document.getElementById('exerciseList').appendChild(div);
 }
@@ -104,7 +105,7 @@ async function saveRoutine() {
     const day = parseInt(document.getElementById('modalDayIndex').value);
     const name = document.getElementById('routineName').value;
     const exercises = [];
-    document.querySelectorAll('#exerciseList > div').forEach(row => {
+    document.querySelectorAll('.exercise-row').forEach(row => {
         exercises.push({
             name: row.querySelector('.ex-name').value,
             sets: row.querySelector('.ex-sets').value,
@@ -112,14 +113,17 @@ async function saveRoutine() {
         });
     });
     
-    // Check if updating or creating (simplified for now: always delete and post)
     const existing = window.allRoutines.find(r => r.day_of_week === day);
     if (existing) {
-        await secureFetch(`/api/fitness/routines/${existing.id}`, {
-            method: 'PUT',
-            body: JSON.stringify({ name, exercises })
-        });
-    } else {
+        if (exercises.length === 0) {
+            await secureFetch(`/api/fitness/routines/${existing.id}`, { method: 'DELETE' });
+        } else {
+            await secureFetch(`/api/fitness/routines/${existing.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ name, exercises })
+            });
+        }
+    } else if (exercises.length > 0) {
         await secureFetch('/api/fitness/routines', {
             method: 'POST',
             body: JSON.stringify({ day_of_week: day, name, exercises })

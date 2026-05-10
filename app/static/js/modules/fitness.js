@@ -16,26 +16,27 @@ async function initFitnessTab() {
 }
 
 function renderRoutineBuilder(routines) {
-    const container = document.getElementById('routineBuilder');
+    const mobileContainer = document.getElementById('mobileRoutineView');
+    const desktopContainer = document.getElementById('desktopRoutineView');
     const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
     
-    container.innerHTML = `
-        <div class="space-y-6">
-            <div class="flex items-center justify-between">
-                <div class="grid grid-cols-4 md:grid-cols-7 gap-2 w-full">
-                    ${days.map((day, i) => `
-                        <button onclick="selectDay(${i})" id="dayBtn-${i}" class="px-2 py-4 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-black text-slate-400 hover:text-white hover:border-blue-500/50 transition-all">
-                            ${day}
-                        </button>
-                    `).join('')}
+    // Desktop View
+    desktopContainer.innerHTML = days.map((day, i) => {
+        const routine = routines.find(r => r.day_of_week === i);
+        return `
+            <div class="glass p-6 rounded-2xl border border-white/5">
+                <div class="flex justify-between items-center mb-4">
+                    <h5 class="text-xs font-black text-blue-400 uppercase tracking-widest">${day}</h5>
+                    <button onclick="editRoutine(${i})" class="text-[9px] bg-blue-600 text-white px-3 py-1 rounded">Düzenle</button>
+                </div>
+                <div class="space-y-1">
+                    ${routine ? routine.exercises.map(ex => `<p class="text-[10px] text-white font-bold">${ex.name}</p>`).join('') : '<p class="text-[9px] text-slate-600 italic">Program yok</p>'}
                 </div>
             </div>
-            <div id="dayDetail" class="p-8 bg-slate-950/50 rounded-3xl border border-white/5 min-h-[200px]">
-                <p class="text-slate-500 text-sm text-center pt-16 font-bold italic">Antrenmanını görüntülemek veya düzenlemek için bir gün seç.</p>
-            </div>
-        </div>
-    `;
-    // Select today by default
+        `;
+    }).join('');
+
+    // Mobile View (selector is already static in index.html, just ensure selectDay works)
     selectDay(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
 }
 

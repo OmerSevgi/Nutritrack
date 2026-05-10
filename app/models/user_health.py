@@ -65,7 +65,7 @@ class RoutineExercise(db.Model):
     routine_id = db.Column(db.Integer, db.ForeignKey('workout_routines.id'), nullable=False)
     exercise_name = db.Column(db.String(100), nullable=False)
     target_sets = db.Column(db.Integer, default=3)
-    target_reps = db.Column(db.Integer, default=10)
+    target_reps = db.Column(db.String(50), default='10') # Changed from Integer to String to support 'Tükeniş'
 
 class Workout(db.Model):
     __tablename__ = 'workouts'

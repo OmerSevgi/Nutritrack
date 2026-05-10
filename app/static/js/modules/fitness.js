@@ -17,17 +17,52 @@ async function initFitnessTab() {
 
 function renderRoutineBuilder(routines) {
     const container = document.getElementById('routineBuilder');
-    const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+    
     container.innerHTML = `
-        <div class="flex gap-2 overflow-x-auto pb-4">
-            ${days.map((day, i) => `
-                <button onclick="editRoutine(${i})" class="flex-1 min-w-[60px] p-3 rounded-xl bg-slate-800 text-[10px] font-black text-white hover:bg-blue-600 transition">
-                    ${day}
-                </button>
-            `).join('')}
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    ${days.map((day, i) => `
+                        <button onclick="selectDay(${i})" id="dayBtn-${i}" class="px-5 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-[11px] font-black text-slate-400 hover:text-white hover:border-blue-500/50 transition-all whitespace-nowrap">
+                            ${day}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+            <div id="dayDetail" class="p-6 bg-slate-950/50 rounded-3xl border border-white/5 min-h-[150px]">
+                <p class="text-slate-500 text-sm text-center pt-10 font-bold italic">Bir gün seçerek antrenmanını görüntüle veya düzenle</p>
+            </div>
+        </div>
+    `;
+    // Select today by default
+    selectDay(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
+}
+
+function selectDay(dayIndex) {
+    // UI Update
+    document.querySelectorAll('[id^="dayBtn-"]').forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
+    document.getElementById(`dayBtn-${dayIndex}`).classList.add('bg-blue-600', 'text-white');
+    
+    const routine = window.allRoutines.find(r => r.day_of_week === dayIndex);
+    const detail = document.getElementById('dayDetail');
+    
+    detail.innerHTML = `
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="text-lg font-black text-white">${routine ? routine.name : 'Program Tanımlanmamış'}</h4>
+            <button onclick="editRoutine(${dayIndex})" class="text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold uppercase transition">Düzenle</button>
+        </div>
+        <div class="space-y-2">
+            ${routine ? routine.exercises.map(ex => `
+                <div class="flex justify-between items-center bg-slate-900/50 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-white">${ex.name}</span>
+                    <span class="text-[10px] text-slate-500 font-black uppercase">${ex.sets} SET X ${ex.reps} TEKRAR</span>
+                </div>
+            `).join('') : '<p class="text-slate-600 text-xs italic">Bu gün için herhangi bir antrenman eklenmemiş.</p>'}
         </div>
     `;
 }
+
 
 function editRoutine(dayIndex) {
     document.getElementById('modalDayIndex').value = dayIndex;

@@ -32,7 +32,21 @@
             background: radial-gradient(circle at top left, #0f172a, #020617);
             background-attachment: fixed;
             color: #f8fafc;
+            transition: background 0.3s, color 0.3s;
         }
+        body.light-mode {
+            background: radial-gradient(circle at top left, #f8fafc, #e2e8f0);
+            color: #1e293b;
+        }
+        body.light-mode .glass {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+        body.light-mode .text-white { color: #1e293b; }
+        body.light-mode .text-slate-400 { color: #64748b; }
+        body.light-mode .bg-slate-900 { background: #f1f5f9; }
+        body.light-mode .bg-slate-950 { background: #e2e8f0; }
         .glass { 
             background: var(--glass-bg); 
             backdrop-filter: blur(20px); 
@@ -86,6 +100,9 @@
                     <a href="/settings" class="text-xs md:text-sm font-bold text-slate-400 hover:text-emerald-400 transition flex items-center gap-2">
                         <i class="fa-solid fa-sliders text-[10px] opacity-50"></i> <span class="hidden md:inline">Ayarlar</span>
                     </a>
+                    <button onclick="toggleTheme()" class="text-xs text-slate-400 hover:text-emerald-400">
+                        <i class="fa-solid fa-moon" id="themeIcon"></i>
+                    </button>
                     <button onclick="logout()" class="px-3 md:px-5 py-2 rounded-xl bg-red-500/10 text-red-400 text-[10px] font-black border border-red-500/20 hover:bg-red-500 hover:text-white transition-all duration-300 uppercase tracking-widest">
                         Çıkış
                     </button>
@@ -102,6 +119,27 @@
                 setTimeout(() => document.getElementById('splash').remove(), 500);
             }, 800);
         });
+
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('themeIcon');
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                localStorage.setItem('theme', 'light');
+                icon.className = 'fa-solid fa-sun';
+            } else {
+                localStorage.setItem('theme', 'dark');
+                icon.className = 'fa-solid fa-moon';
+            }
+        }
+
+        // Apply saved theme
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+            document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+        }
 
         const navToken = localStorage.getItem('token');
         if (navToken) {

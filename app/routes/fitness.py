@@ -206,6 +206,22 @@ def get_weekly_stats(current_user):
     
     return jsonify(stats), 200
 
+@fitness_bp.route('/ask-coach', methods=['POST'])
+@token_required
+def ask_coach(current_user):
+    data = request.get_json()
+    query = data.get('query')
+    
+    ai_service = AIService()
+    context = ai_service.get_holistic_context(current_user.id)
+    user_profile = {
+        'goal': current_user.health_profile.goal if current_user.health_profile else 'maintenance',
+        'weight': current_user.health_profile.weight if current_user.health_profile else 70
+    }
+    
+    response = ai_service.ask_coach(user_profile, context, query)
+    return jsonify({'response': response}), 200
+
 @fitness_bp.route('/workout/<int:workout_id>', methods=['DELETE'])
 @token_required
 def delete_workout(current_user, workout_id):

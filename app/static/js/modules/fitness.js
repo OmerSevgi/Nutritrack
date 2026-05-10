@@ -47,9 +47,9 @@ function editRoutine(dayIndex) {
 
 function closeModal() { document.getElementById('routineModal').classList.add('hidden'); }
 
-function addExerciseRow(name = '', sets = 3, reps = 10, failure = false) {
+function addExerciseRow(name = '', sets = 3, reps = 10) {
     const div = document.createElement('div');
-    div.className = 'grid grid-cols-4 gap-2 items-center';
+    div.className = 'grid grid-cols-3 gap-2 items-center';
     div.innerHTML = `
         <input type="text" value="${name}" placeholder="Hareket" class="col-span-1 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-name">
         <div class="flex flex-col">
@@ -58,13 +58,10 @@ function addExerciseRow(name = '', sets = 3, reps = 10, failure = false) {
         </div>
         <div class="flex flex-col">
             <label class="text-[8px] text-slate-500 uppercase">Tekrar</label>
-            <select class="w-16 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-reps">
+            <select class="w-20 bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white ex-reps">
+                <option value="Tükeniş" ${reps=='Tükeniş'?'selected':''}>Tükeniş</option>
                 ${[5,8,10,12,15,20].map(r => `<option value="${r}" ${reps==r?'selected':''}>${r}</option>`).join('')}
             </select>
-        </div>
-        <div class="flex flex-col items-center">
-            <label class="text-[8px] text-slate-500 uppercase">Tükeniş</label>
-            <input type="checkbox" ${failure ? 'checked' : ''} class="w-4 h-4 ex-failure">
         </div>
     `;
     document.getElementById('exerciseList').appendChild(div);
@@ -78,8 +75,7 @@ async function saveRoutine() {
         exercises.push({
             name: row.querySelector('.ex-name').value,
             sets: row.querySelector('.ex-sets').value,
-            reps: row.querySelector('.ex-reps').value,
-            failure: row.querySelector('.ex-failure').checked
+            reps: row.querySelector('.ex-reps').value
         });
     });
     

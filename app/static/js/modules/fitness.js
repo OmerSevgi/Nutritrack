@@ -20,7 +20,7 @@ function renderRoutineBuilder(routines) {
     const desktopContainer = document.getElementById('desktopRoutineView');
     const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
     
-    // Desktop View
+// Desktop View
     desktopContainer.innerHTML = days.map((day, i) => {
         const routine = routines.find(r => r.day_of_week === i);
         return `
@@ -30,7 +30,12 @@ function renderRoutineBuilder(routines) {
                     <button onclick="editRoutine(${i})" class="text-[9px] bg-blue-600 text-white px-3 py-1 rounded">Düzenle</button>
                 </div>
                 <div class="space-y-1">
-                    ${routine ? routine.exercises.map(ex => `<p class="text-[10px] text-white font-bold">${ex.name}</p>`).join('') : '<p class="text-[9px] text-slate-600 italic">Program yok</p>'}
+                    ${routine ? routine.exercises.map(ex => `
+                        <div class="flex justify-between items-center">
+                            <p class="text-[10px] text-white font-bold">${ex.name}</p>
+                            <p class="text-[9px] text-slate-500 font-black uppercase">${ex.sets}x${ex.reps}</p>
+                        </div>
+                    `).join('') : '<p class="text-[9px] text-slate-600 italic">Program yok</p>'}
                 </div>
             </div>
         `;

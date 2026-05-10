@@ -27,8 +27,9 @@ class AIService:
         last_workouts = Workout.query.filter_by(user_id=user_id).order_by(Workout.timestamp.desc()).limit(3).all()
         weekly_routines = WorkoutRoutine.query.filter_by(user_id=user_id).all()
         
-        context = f"Son beslenme: {[l.summary_text for l in last_logs]}. "
-        context += f"Son antrenmanlar: {[w.description for w in last_workouts]}. "
+        # Corrected: DailyLog doesn't have summary_text, but we can list the date
+        context = f"Son beslenme günleri: {[l.date.strftime('%d %b') for l in last_logs]}. "
+        context += f"Son antrenmanlar: {[w.description for w in last_workouts if w.description]}. "
         context += f"Haftalık Program: {[f'{r.name} (Gün: {r.day_of_week}): ' + ', '.join([e.exercise_name for e in r.exercises]) for r in weekly_routines]}."
         return context
 

@@ -48,10 +48,12 @@ function renderRoutineBuilder(routines) {
 function selectDay(dayIndex) {
     // UI Update
     document.querySelectorAll('[id^="dayBtn-"]').forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
-    document.getElementById(`dayBtn-${dayIndex}`).classList.add('bg-blue-600', 'text-white');
+    const btn = document.getElementById(`dayBtn-${dayIndex}`);
+    if (btn) btn.classList.add('bg-blue-600', 'text-white');
     
     const routine = window.allRoutines.find(r => r.day_of_week === dayIndex);
     const detail = document.getElementById('dayDetail');
+    if (!detail) return;
     
     detail.innerHTML = `
         <div class="flex justify-between items-center mb-6">

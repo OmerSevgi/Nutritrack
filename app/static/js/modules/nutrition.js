@@ -31,7 +31,14 @@ function updateNutritionUI(data) {
         setVal('carbDisplay', data.carbs, targets.carbs || 0);
         setVal('fatDisplay', data.fats, targets.fats || 0);
         setVal('nutriScoreDisplay', data.nutri_score || 0);
-...
+
+        if (data.targets) {
+            setBar('calBar', data.calories, data.targets.calories);
+            setBar('proBar', data.protein, data.targets.protein);
+            setBar('carbBar', data.carbs, data.targets.carbs);
+            setBar('fatBar', data.fats, data.targets.fats);
+        }
+
         const waterEl = document.getElementById('waterDisplay');
         if (waterEl) waterEl.innerText = Math.round(data.water || 0);
         
@@ -66,10 +73,9 @@ function updateNutritionUI(data) {
                         </div>
                         <div id="meal-details-${idx}" class="hidden p-6 bg-slate-950/20 border-t border-white/5 space-y-3">
                             ${meal.items.map(it => `
-                        <div class="flex justify-between items-center text-[11px]">
-                            <span class="text-slate-300 font-medium">${it.name} (${it.quantity}g)</span>
-                            <div class="flex gap-4 text-slate-500 font-bold">
-
+                                <div class="flex justify-between items-center text-[11px]">
+                                    <span class="text-slate-300 font-medium">${it.name} (${it.quantity}g)</span>
+                                    <div class="flex gap-4 text-slate-500 font-bold">
                                         <span>${it.calories} kcal</span>
                                         <span class="text-blue-400/80">P: ${it.protein}</span>
                                         <span class="text-amber-400/80">K: ${it.carbs}</span>
@@ -81,7 +87,6 @@ function updateNutritionUI(data) {
                     `;
                     list.appendChild(div);
                 });
-
             }
         }
     } catch (err) {

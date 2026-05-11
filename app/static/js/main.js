@@ -28,14 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const qty = document.getElementById('foodQty').value;
             const cal = document.getElementById('foodCal').value;
             const pro = document.getElementById('foodPro').value;
+            const carb = document.getElementById('foodCarb').value;
+            const fat = document.getElementById('foodFat').value;
             
             setButtonLoading(btn, true);
             const res = await secureFetch('/api/nutrition/food', {
                 method: 'POST',
                 body: JSON.stringify({ 
                     name, calories: cal, protein: pro, 
-                    carbs: document.getElementById('foodCarb').value, 
-                    fats: document.getElementById('foodFat').value 
+                    carbs: carb, 
+                    fats: fat 
                 })
             });
             

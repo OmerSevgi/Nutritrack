@@ -20,6 +20,11 @@ class NutritionService:
     def get_weekly_history(u): return NutritionSummaryService.get_weekly_history(u)
 
     @staticmethod
+    def calculate_nutri_score(u, d):
+        from app.services.health_service import HealthService
+        return HealthService.calculate_nutri_score(u, d)
+
+    @staticmethod
     def log_manual_meal(u, fd, q, mt): return NutritionLoggerService.log_manual_meal(u, fd, q, mt)
 
     @staticmethod

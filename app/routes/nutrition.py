@@ -39,7 +39,9 @@ def log_ai_meal(current_user):
 def get_summary(current_user):
     date_str = request.args.get('date', datetime.utcnow().strftime('%Y-%m-%d'))
     date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-    return jsonify(NutritionService.get_daily_summary(current_user, date_obj)), 200
+    summary = NutritionService.get_daily_summary(current_user, date_obj)
+    summary['nutri_score'] = NutritionService.calculate_nutri_score(current_user, date_obj)
+    return jsonify(summary), 200
 
 @nutrition_bp.route('/weekly-history', methods=['GET'])
 @token_required

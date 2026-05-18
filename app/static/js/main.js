@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.onload = () => {
     fetchSummary();
     fetchWeeklyHistory();
+    fetchDailyBriefing();
     const dp = document.getElementById('datePicker');
     if (dp) dp.value = currentDate;
     
@@ -141,6 +142,19 @@ window.onload = () => {
         }
     });
 };
+
+async function fetchDailyBriefing() {
+    const res = await secureFetch('/api/ai/daily-briefing');
+    if (res && res.ok) {
+        const data = await res.json();
+        const container = document.getElementById('dailyBriefingContainer');
+        const textEl = document.getElementById('dailyBriefingText');
+        if (container && textEl && data.briefing) {
+            textEl.innerText = data.briefing;
+            container.classList.remove('hidden');
+        }
+    }
+}
 
 function toggleProgramEditor() {
     const editor = document.getElementById('programEditor');

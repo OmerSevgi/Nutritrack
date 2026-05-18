@@ -37,3 +37,37 @@ class NutritionAIService(AIBaseService):
         if not recipes: return "Uygun tarif bulunamadı."
         prompt = f"Bulunan tarifler: {json.dumps(recipes)}. Bunları kullanıcının hedefine uygun seç ve kısa tariflerini ver."
         return self._call_groq(prompt)
+
+    def get_food_recommendations(self, user_profile, daily_status):
+        prompt = f"""
+        Kullanıcı Hedefi: {user_profile.get('goal')}
+        Günlük Alınan: {daily_status.get('calories')} kcal, {daily_status.get('protein')}g protein
+        Hedeflenen: {user_profile.get('target_calories')} kcal, {user_profile.get('target_protein')}g protein
+        
+        GÖREV:
+        Kullanıcının makro hedeflerine ulaşması için bugün tüketebileceği 3 sağlıklı besin önerisi ver.
+        Cevabını kısa maddeler halinde ver.
+        """
+        return self._call_groq(prompt)
+
+    def generate_daily_briefing(self, user_profile, yesterday_stats):
+        prompt = f"""
+        Dünki Özet: {json.dumps(yesterday_stats)}
+        Kullanıcı Hedefi: {user_profile.get('goal')}
+        
+        GÖREV:
+        Kullanıcının dünkü performansını değerlendir ve bugüne özel bir strateji ver.
+        Cevabını samimi ve kısa bir paragraf olarak yaz.
+        """
+        return self._call_groq(prompt)
+
+    def generate_shopping_list(self, user_profile, fitness_stats):
+        prompt = f"""
+        Hedef: {user_profile.get('goal')}
+        Haftalık Toplam Antrenman Hacmi: {fitness_stats.get('total_volume')} kg
+        
+        GÖREV:
+        Kullanıcının bu performans ve hedefi için marketten alması gereken en kritik 5 besini listele.
+        Cevabını sadece liste olarak ver.
+        """
+        return self._call_groq(prompt)

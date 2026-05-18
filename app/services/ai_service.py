@@ -48,3 +48,7 @@ class AIService:
     def generate_weekly_fitness_report(self, prof, stats):
         prompt = f"Haftalık spor raporu özeti hazırla: {stats}"
         return self.fitness._call_groq(prompt)
+
+    def get_food_recommendations(self, prof, status): return self.nutrition.get_food_recommendations(prof, status)
+    def generate_daily_briefing(self, prof, stats): return self.nutrition.generate_daily_briefing(prof, stats)
+    def generate_shopping_list(self, prof, fstats): return self.nutrition.generate_shopping_list(prof, fstats)

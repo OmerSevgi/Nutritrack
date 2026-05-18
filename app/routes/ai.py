@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from app.models.interaction import AIInteraction
+from app.models.user_health import Workout
 from app.utils.auth_utils import token_required
 from app.services.ai_service import AIService
 from app.services.nutrition_service import NutritionService

@@ -126,22 +126,28 @@ def complete_workout(current_user):
             'sets': []
         }
         for i, set_data in enumerate(ex_data.get('sets', [])):
+            try:
+                weight_val = float(set_data.get('weight', 0) or 0)
+                reps_val = int(set_data.get('reps', 0) or 0)
+            except (ValueError, TypeError):
+                weight_val = 0
+                reps_val = 0
+                
             w_set = WorkoutSet(
                 workout_id=workout.id,
                 exercise_name=ex_data.get('name'),
                 set_number=i + 1,
-                weight=float(set_data.get('weight', 0)),
-                reps=int(set_data.get('reps', 0))
+                weight=weight_val,
+                reps=reps_val
             )
             db.session.add(w_set)
             ex_summary['sets'].append({
-                'weight': w_set.weight,
-                'reps': w_set.reps
+                'weight': weight_val,
+                'reps': reps_val
             })
         structured_data.append(ex_summary)
     
     ai_service = AIService()
-    routine = WorkoutRoutine.query.get(data.get('routine_id')) if data.get('routine_id') else None
     planned_data = []
     if routine:
         planned_data = [{
@@ -155,7 +161,14 @@ def complete_workout(current_user):
         'weight': current_user.health_profile.weight if current_user.health_profile else 70
     }
     
-    feedback = ai_service.analyze_structured_workout(user_profile, planned_data, structured_data)
+    try:
+        feedback = ai_service.analyze_structured_workout(user_profile, planned_data, structured_data)
+        if not feedback:
+            feedback = "Antrenman başarıyla kaydedildi. Harika iş!"
+    except Exception as e:
+        print(f"AI Feedback Error: {e}")
+        feedback = "Antrenman kaydedildi ancak AI analizi şu an yapılamıyor."
+        
     workout.trainer_feedback = feedback
     workout.weight_data = structured_data
     

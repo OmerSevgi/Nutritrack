@@ -161,6 +161,7 @@ function renderTodayTracker(routine) {
 }
 
 async function completeWorkout() {
+    const btn = event?.target || document.querySelector('button[onclick="completeWorkout()"]');
     const exercises = [];
     document.querySelectorAll('#todayExercises > div').forEach(exDiv => {
         const sets = [];
@@ -173,13 +174,61 @@ async function completeWorkout() {
         exercises.push({ name: exDiv.dataset.name, sets });
     });
     
+    setButtonLoading(btn, true);
     const res = await secureFetch('/api/fitness/workout/complete', {
         method: 'POST',
         body: JSON.stringify({ routine_id: window.currentRoutineId, exercises })
     });
+    setButtonLoading(btn, false);
     
     if (res && res.ok) {
         const data = await res.json();
-        alert('Antrenman tamamlandı! AI Yorumu: ' + data.feedback);
+        const feedbackContainer = document.getElementById('workoutFeedbackContainer');
+        const feedbackText = document.getElementById('workoutFeedbackText');
+        if (feedbackContainer && feedbackText) {
+            feedbackText.innerText = data.feedback;
+            feedbackContainer.classList.remove('hidden');
+            feedbackContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        fetchWorkouts();
     }
+}
+
+async function fetchWorkouts() {
+    const res = await secureFetch('/api/fitness/workouts');
+    if (res && res.ok) {
+        const workouts = await res.json();
+        renderWorkouts(workouts);
+    }
+}
+
+function renderWorkouts(workouts) {
+    const container = document.getElementById('workoutList');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <h3 class="text-sm font-black text-slate-500 mb-6 uppercase tracking-widest">Son Antrenmanlar</h3>
+        ${workouts.map(w => `
+            <div class="glass p-6 rounded-3xl border border-white/5 space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-black text-blue-400 uppercase tracking-widest">${w.date}</span>
+                    <span class="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold uppercase">${w.type}</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    ${w.weight_data ? w.weight_data.map(ex => `
+                        <div class="bg-slate-900/50 p-3 rounded-xl border border-white/5">
+                            <p class="text-[10px] font-black text-white mb-1 truncate">${ex.name}</p>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase">${ex.sets.length} Set</p>
+                        </div>
+                    `).join('') : ''}
+                </div>
+                ${w.feedback ? `
+                    <div class="mt-4 p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
+                        <p class="text-[9px] font-black text-emerald-400 uppercase mb-2 tracking-widest">AI Koç Yorumu</p>
+                        <p class="text-xs text-slate-300 leading-relaxed">${w.feedback}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('')}
+    `;
 }
